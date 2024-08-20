@@ -8,19 +8,20 @@ datasource db {
 }
 
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  name          String?
-  password      String    // Store hashed password, not Bytes
-  bio           String?
-  profileImage  String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  posts         Post[]
-  comments      Comment[]
-  likes         Like[]
-  followers     Follow[]  @relation("Follower")
-  following     Follow[]  @relation("Following")
+  id           String      @id @default(uuid())
+  email        String      @unique
+  name         String?
+  password     String // Store hashed password, not Bytes
+  bio          String?
+  profileImage String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+  posts        Post[]
+  comments     Comment[]
+  likes        Like[]
+  followers    Follow[]    @relation("Follower")
+  following    Follow[]    @relation("Following")
+  TagFollow    TagFollow[]
 }
 
 model Post {
@@ -35,7 +36,7 @@ model Post {
   comments    Comment[]
   likes       Like[]
   tags        Tag[]
-  readingTime Int?      // Estimated reading time in minutes
+  readingTime Int? // Estimated reading time in minutes
 }
 
 model Comment {
@@ -61,9 +62,20 @@ model Like {
 }
 
 model Tag {
-  id    String @id @default(uuid())
-  name  String @unique
-  posts Post[]
+  id        String      @id @default(uuid())
+  name      String      @unique
+  posts     Post[]
+  TagFollow TagFollow[]
+}
+
+model TagFollow {
+  id     String @id @default(uuid())
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+  tag    Tag    @relation(fields: [tagId], references: [id])
+  tagId  String
+
+  @@unique([userId, tagId])
 }
 
 model Follow {
