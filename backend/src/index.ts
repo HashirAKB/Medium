@@ -4,6 +4,7 @@ import { withAccelerate } from '@prisma/extension-accelerate'
 import { userRouter } from './routes/user';
 import { blogRouter } from './routes/blog';
 import { commentRouter } from './routes/comments';
+import { likeRouter } from './routes/likes';
 
 const app = new Hono<{
 	Bindings: {
@@ -27,5 +28,6 @@ app.use('*', async (c, next) => {
 app.route('/api/v1/user',userRouter);
 app.route('/api/v1/blog',blogRouter);
 app.route('/api/v1/comment',commentRouter);
+app.route('/api/v1/like',likeRouter);
 
 export default app;
