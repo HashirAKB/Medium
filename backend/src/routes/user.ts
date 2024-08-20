@@ -3,6 +3,7 @@ import { sign, verify } from 'hono/jwt'
 import { zValidator } from '@hono/zod-validator';
 import { authMiddleware } from '../middlewares/auth-middleware';
 import { z } from 'zod';
+import { hashSync } from 'bcryptjs';
 
 const userRouter = new Hono();
 
@@ -77,7 +78,89 @@ userRouter.get('/me', authMiddleware, async (c) => {
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { id: true, email: true, name: true, bio: true, profileImage: true },
+    include: {
+      posts: {
+        where: {
+          published: true,
+        },
+        include: {
+          tags: true,
+          comments: {
+            include: {
+              author: {
+                select: {
+                  id: true,
+                  name: true,
+                  profileImage: true,
+                },
+              },
+            },
+          },
+          likes: {
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  profileImage: true,
+                },
+              },
+            },
+          },
+        },
+      },
+      comments: {
+        include: {
+          post: true,
+          author: {
+            select: {
+              id: true,
+              name: true,
+              profileImage: true,
+            },
+          },
+        },
+      },
+      likes: {
+        include: {
+          post: true,
+          user: {
+            select: {
+              id: true,
+              name: true,
+              profileImage: true,
+            },
+          },
+        },
+      },
+      followers: {
+        include: {
+          follower: {
+            select: {
+              id: true,
+              name: true,
+              profileImage: true,
+            },
+          },
+        },
+      },
+      following: {
+        include: {
+          following: {
+            select: {
+              id: true,
+              name: true,
+              profileImage: true,
+            },
+          },
+        },
+      },
+      TagFollow: {
+        include: {
+          tag: true,
+        },
+      },
+    },
   });
 
   if (!user) {
@@ -86,6 +169,55 @@ userRouter.get('/me', authMiddleware, async (c) => {
   }
 
   return c.json(user);
+});
+
+const userUpdateSchema = z.object({
+  name: z.string().optional(),
+  password: z.string().min(6).optional(),
+  bio: z.string().optional(),
+  profileImage: z.string().url().optional(),
+  followingIds: z.array(z.string()).optional(),
+  tagFollowIds: z.array(z.string()).optional(),
+});
+
+type UserUpdateInput = z.infer<typeof userUpdateSchema>;
+
+userRouter.patch('/me', zValidator('json', userUpdateSchema), authMiddleware, async (c) => {
+  const prisma = c.get('prisma');
+  const userId = c.get('userId');
+  const { name, password, bio, profileImage, followingIds, tagFollowIds } = c.req.valid('json');
+
+  const updatedUser = await prisma.user.update({
+    where: { id: userId },
+    data: {
+      name: name,
+      password: password ? hashSync(password, 10) : undefined,
+      bio: bio,
+      profileImage: profileImage,
+      following: {
+        set: [],
+        connect: followingIds?.map((id) => ({ id })),
+      },
+      TagFollow: {
+        set: [],
+        connect: tagFollowIds?.map((id) => ({ id })),
+      },
+    },
+    include: {
+      following: {
+        select: {
+          id: true,
+        },
+      },
+      TagFollow: {
+        include: {
+          tag: true,
+        },
+      },
+    },
+  });
+
+  return c.json(updatedUser);
 });
 
 export { userRouter };
