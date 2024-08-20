@@ -1,15 +1,10 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { authMiddleware } from '../middlewares/auth-middleware';
-import { z } from 'zod';
+import { commentSchema } from '@hashirakb/common4medium';
 
 const commentRouter = new Hono();
 commentRouter.use('*', authMiddleware);
-
-const commentSchema = z.object({
-  content: z.string().min(1),
-  postId: z.string().uuid(),
-});
 
 // Create a new comment
 commentRouter.post('/', zValidator('json', commentSchema), async (c) => {

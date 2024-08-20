@@ -1,16 +1,12 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
-import { z } from 'zod';
 import { authMiddleware } from '../middlewares/auth-middleware';
+import { likeSchema } from '@hashirakb/common4medium';
 
 const likeRouter = new Hono();
 
 // Apply the authMiddleware to all routes under likeRouter
 likeRouter.use('*', authMiddleware);
-
-const likeSchema = z.object({
-  postId: z.string().uuid(),
-});
 
 // Like a post
 likeRouter.post('/', zValidator('json', likeSchema), async (c) => {

@@ -1,14 +1,10 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
-import { z } from 'zod';
 import { authMiddleware } from '../middlewares/auth-middleware';
+import { followSchema } from '@hashirakb/common4medium';
 const followRouter = new Hono();
 
 followRouter.use('*', authMiddleware);
-
-const followSchema = z.object({
-  followingId: z.string(),
-});
 
 followRouter.post('/', zValidator('json', followSchema), async (c) => {
   const prisma = c.get('prisma');
