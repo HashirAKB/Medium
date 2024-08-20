@@ -7,19 +7,71 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Posts {
-  id        String  @id
-  title     String
-  content   String
-  published Boolean @default(false)
-  authorId  String
-  User      User    @relation(fields: [authorId], references: [id])
+model User {
+  id            String    @id @default(uuid())
+  email         String    @unique
+  name          String?
+  password      String    // Store hashed password, not Bytes
+  bio           String?
+  profileImage  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  posts         Post[]
+  comments      Comment[]
+  likes         Like[]
+  followers     Follow[]  @relation("Follower")
+  following     Follow[]  @relation("Following")
 }
 
-model User {
-  id       String  @id
-  email    String  @unique
-  name     String?
-  password Bytes
-  Posts    Posts[]
+model Post {
+  id          String    @id @default(uuid())
+  title       String
+  content     String
+  published   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  author      User      @relation(fields: [authorId], references: [id])
+  authorId    String
+  comments    Comment[]
+  likes       Like[]
+  tags        Tag[]
+  readingTime Int?      // Estimated reading time in minutes
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  author    User     @relation(fields: [authorId], references: [id])
+  authorId  String
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    String
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id])
+  userId    String
+  post      Post     @relation(fields: [postId], references: [id])
+  postId    String
+
+  @@unique([userId, postId])
+}
+
+model Tag {
+  id    String @id @default(uuid())
+  name  String @unique
+  posts Post[]
+}
+
+model Follow {
+  id          String @id @default(uuid())
+  follower    User   @relation("Follower", fields: [followerId], references: [id])
+  followerId  String
+  following   User   @relation("Following", fields: [followingId], references: [id])
+  followingId String
+
+  @@unique([followerId, followingId])
 }
