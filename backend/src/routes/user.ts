@@ -4,6 +4,7 @@ import { zValidator } from '@hono/zod-validator';
 import { authMiddleware } from '../middlewares/auth-middleware';
 import { z } from 'zod';
 import { hashSync } from 'bcryptjs';
+import { signinSchema, signupSchema } from '@hashirakb/common4medium';
 
 const userRouter = new Hono();
 
@@ -25,17 +26,6 @@ userRouter.use('/me', async (c, next) => {
   }
 
   await next();
-});
-
-const signupSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6),
-  name: z.string().optional(),
-});
-
-const signinSchema = z.object({
-  email: z.string().email(),
-  password: z.string(),
 });
 
 userRouter.post('/signup', zValidator('json', signupSchema), async (c) => {
@@ -180,7 +170,7 @@ const userUpdateSchema = z.object({
   tagFollowIds: z.array(z.string()).optional(),
 });
 
-type UserUpdateInput = z.infer<typeof userUpdateSchema>;
+// type UserUpdateInput = z.infer<typeof userUpdateSchema>;
 
 userRouter.patch('/me', zValidator('json', userUpdateSchema), authMiddleware, async (c) => {
   const prisma = c.get('prisma');

@@ -2,14 +2,11 @@ import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 import { authMiddleware } from '../middlewares/auth-middleware';
+import { tagSchema } from '@hashirakb/common4medium';
 const tagRouter = new Hono();
 
 // Apply the authMiddleware to routes that require authentication
 tagRouter.use('*', authMiddleware);
-
-const tagSchema = z.object({
-  name: z.string().min(1),
-});
 
 // Create a new tag (requires authentication)
 tagRouter.post('/', zValidator('json', tagSchema), async (c) => {

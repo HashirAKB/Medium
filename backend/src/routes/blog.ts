@@ -1,17 +1,10 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
-import { z } from 'zod';
 import { authMiddleware } from '../middlewares/auth-middleware';
+import { postSchema } from '@hashirakb/common4medium';
 
 const blogRouter = new Hono();
 blogRouter.use('*', authMiddleware);
-
-const postSchema = z.object({
-  title: z.string().min(1),
-  content: z.string().min(1),
-  published: z.boolean().optional(),
-  tags: z.array(z.string().uuid()).optional(), // Array of Tag IDs
-});
 
 blogRouter.post('/', zValidator('json', postSchema), async (c) => {
   const prisma = c.get('prisma');

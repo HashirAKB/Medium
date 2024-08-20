@@ -1,0 +1,18 @@
+{
+  "name": "@hashirakb/common4medium",
+  "version": "0.0.2",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "hashirakb",
+  "license": "ISC",
+  "description": "This package contains the shared types and schemas used across the frontend and backend of the medium-like blogging application.",
+  "dependencies": {
+    "typescript": "^5.5.4",
+    "zod": "^3.23.8"
+  }
+}
