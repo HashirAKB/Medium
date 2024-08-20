@@ -6,6 +6,9 @@ import { blogRouter } from './routes/blog';
 import { commentRouter } from './routes/comments';
 import { likeRouter } from './routes/likes';
 import { tagRouter } from './routes/tag';
+import { tagFollowRouter } from './routes/tagFollow';
+import { followRouter } from './routes/follow';
+import { feedRouter } from './routes/feed';
 
 const app = new Hono<{
 	Bindings: {
@@ -31,5 +34,8 @@ app.route('/api/v1/blog',blogRouter);
 app.route('/api/v1/comment',commentRouter);
 app.route('/api/v1/like',likeRouter);
 app.route('/api/v1/tag',tagRouter);
+app.route('/api/v1/follow',followRouter);
+app.route('/api/v1/tag-follow',tagFollowRouter);
+app.route('/api/v1/feed',feedRouter);
 
 export default app;
