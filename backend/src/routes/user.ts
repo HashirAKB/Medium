@@ -1,9 +1,29 @@
 import { Hono } from 'hono';
-import { sign } from 'hono/jwt';
+import { sign, verify } from 'hono/jwt'
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
 
 const userRouter = new Hono();
+
+userRouter.use('/me', async (c, next) => {
+  const authHeader = c.req.header('Authorization');
+  if (!authHeader) {
+    c.status(401);
+    return c.json({ error: 'Missing Authorization header' });
+  }
+
+  const token = authHeader.split(' ')[1];
+  try {
+    console.log(token);
+    const payload = await verify(token, c.env.JWT_SECRET);
+    c.set('userId', payload.userId);
+  } catch (e) {
+    c.status(401);
+    return c.json({ error: 'Invalid token' });
+  }
+
+  await next();
+});
 
 const signupSchema = z.object({
   email: z.string().email(),
@@ -44,7 +64,9 @@ userRouter.post('/signin', zValidator('json', signinSchema), async (c) => {
 
   // TODO: Implement password comparison logic here
 
+  console.log(c.env.JWT_SECRET);
   const token = await sign({ userId: user.id }, c.env.JWT_SECRET);
+  console.log(token);
   return c.json({ token });
 });
 
