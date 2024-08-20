@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import { sign, verify } from 'hono/jwt'
 import { zValidator } from '@hono/zod-validator';
+import { authMiddleware } from '../middlewares/auth-middleware';
 import { z } from 'zod';
 
 const userRouter = new Hono();
@@ -70,7 +71,7 @@ userRouter.post('/signin', zValidator('json', signinSchema), async (c) => {
   return c.json({ token });
 });
 
-userRouter.get('/me', async (c) => {
+userRouter.get('/me', authMiddleware, async (c) => {
   const prisma = c.get('prisma');
   const userId = c.get('userId');
 

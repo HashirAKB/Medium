@@ -1,8 +1,10 @@
 import { Hono } from 'hono';
 import { zValidator } from '@hono/zod-validator';
 import { z } from 'zod';
+import { authMiddleware } from '../middlewares/auth-middleware';
 
 const blogRouter = new Hono();
+blogRouter.use('*', authMiddleware);
 
 const postSchema = z.object({
   title: z.string().min(1),

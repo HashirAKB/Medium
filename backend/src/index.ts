@@ -1,9 +1,9 @@
 import { Hono } from 'hono'
 import { PrismaClient } from '@prisma/client/edge'
 import { withAccelerate } from '@prisma/extension-accelerate'
-import { decode, sign, verify } from 'hono/jwt'
 import { userRouter } from './routes/user';
 import { blogRouter } from './routes/blog';
+import { commentRouter } from './routes/comments';
 
 const app = new Hono<{
 	Bindings: {
@@ -24,26 +24,8 @@ app.use('*', async (c, next) => {
   await next();
 });
 
-app.use('/api/v1/blog/*', async (c, next) => {
-  const authHeader = c.req.header('Authorization');
-  if (!authHeader) {
-    c.status(401);
-    return c.json({ error: 'Missing Authorization header' });
-  }
-
-  const token = authHeader.split(' ')[1];
-  try {
-    const payload = await verify(token, c.env.JWT_SECRET);
-    c.set('userId', payload.userId);
-  } catch (e) {
-    c.status(401);
-    return c.json({ error: 'Invalid token' });
-  }
-
-  await next();
-});
-
 app.route('/api/v1/user',userRouter);
 app.route('/api/v1/blog',blogRouter);
+app.route('/api/v1/comment',commentRouter);
 
 export default app;
