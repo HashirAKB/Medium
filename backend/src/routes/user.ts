@@ -3,7 +3,7 @@ import { sign, verify } from 'hono/jwt'
 import { zValidator } from '@hono/zod-validator';
 import { authMiddleware } from '../middlewares/auth-middleware';
 import { z } from 'zod';
-import { hashSync } from 'bcryptjs';
+import { genSalt, hash, compare } from "bcrypt-ts";
 import { signinSchema, signupSchema } from '@hashirakb/common4medium';
 
 const userRouter = new Hono();
@@ -29,37 +29,83 @@ userRouter.use('/me', async (c, next) => {
 });
 
 userRouter.post('/signup', zValidator('json', signupSchema), async (c) => {
-  const prisma = c.get('prisma');
-  const { email, password, name } = c.req.valid('json');
+    const prisma = c.get('prisma');
+    const { email, password, name } = c.req.valid('json');
+    try {
+    // Check if a user with the same email already exists
+    const existingUser = await prisma.user.findUnique({
+      where: { email },
+    });
 
-  const user = await prisma.user.create({
-    data: {
-      email,
-      password, // Remember to hash this password before storing
-      name,
-    },
-  });
+    if (existingUser) {
+      return c.json({ error: 'User with this email already exists' }, 400);
+    }
 
-  const token = await sign({ userId: user.id }, c.env.JWT_SECRET);
-  return c.json({ token });
+    // Hash the password before storing it
+    const hashedPassword = await genSalt(10).then((salt) => hash(password, salt));
+    console.log("Hashed Password:", hashedPassword);
+
+    // Create the new user
+    const user = await prisma.user.create({
+      data: {
+        email:email,
+        password:hashedPassword,
+        name: name
+      },
+    });
+
+    // Generate a JWT token
+    const token = await sign({ userId: user.id }, c.env.JWT_SECRET);
+
+    // Return the token as a response
+    return c.json({ token }, 201);
+  } catch (err) {
+    if (err.name === "ZodError") {
+      const errors = err.issues.map((issue) => ({
+        field: issue.path.join('.'),
+        message: issue.message,
+      }));
+
+      return c.json({ success: false, errors }, 400);
+    }
+
+    // Log the error for debugging (optional)
+    console.error('Error during user signup:', err);
+
+    // Return a generic error message
+    return c.json({ error: 'An unexpected error occurred. Please try again.' }, 500);
+  }
 });
 
 userRouter.post('/signin', zValidator('json', signinSchema), async (c) => {
   const prisma = c.get('prisma');
   const { email, password } = c.req.valid('json');
 
-  const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) {
-    c.status(401);
-    return c.json({ error: 'Invalid credentials' });
+  try {
+    // Find the user by email
+    const user = await prisma.user.findUnique({ where: { email } });
+    if (!user) {
+      c.status(401);
+      return c.json({ error: 'Invalid credentials' });
+    }
+
+    // Compare the provided password with the stored hashed password
+    const result = await compare(password, user.password);
+      if (result) {
+        // Generate JWT token
+        const token = await sign({ userId: user.id }, c.env.JWT_SECRET);
+        // Return the token in the response
+        return c.json({ token }, 200);
+      }
+      else {
+        c.status(401);
+        return c.json({ "error": 'Invalid credentials' },401);
+      }
+
+  } catch (err) {
+    console.error('Error during signin:', err);
+    return c.json({ error: 'An unexpected error occurred. Please try again.' }, 500);
   }
-
-  // TODO: Implement password comparison logic here
-
-  console.log(c.env.JWT_SECRET);
-  const token = await sign({ userId: user.id }, c.env.JWT_SECRET);
-  console.log(token);
-  return c.json({ token });
 });
 
 userRouter.get('/me', authMiddleware, async (c) => {
