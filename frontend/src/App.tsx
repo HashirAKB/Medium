@@ -7,7 +7,6 @@ import Home from './pages/LandingPage'
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { AuthProvider } from './utils/AuthContext'
 import { BlogFeed } from './pages/BlogFeed'
-import BlogPostPage from './pages/BlogUpload'
 import { dummyBlogs } from './assets/dummyBlogs'
 import { FullBlogPost } from './pages/FullBlogPost'
 import { ProtectedRoute } from './components/ProtectedRoutes'
@@ -25,7 +24,7 @@ const App: React.FC = () => {
             <Route element={<ProtectedRoute />}>
               <Route path="/feed" element={<BlogFeed posts={dummyBlogs}/>}/>
               <Route path="/post/:id" element={<FullBlogPost />}/>
-              <Route path="/viewblog" element={<BlogPostPage />}/>
+              {/* <Route path="/viewblog" element={<BlogPostPage />}/> */}
             </Route>
           </Routes>
         </div>
