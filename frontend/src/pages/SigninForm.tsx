@@ -7,7 +7,9 @@ import { Loader2, Mail } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { useAuth } from '@/utils/AuthContext';
 import { useToast } from "@/components/ui/use-toast"
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   Card,
   CardContent,
@@ -51,6 +53,8 @@ const simulateSocialLogin = (provider: string): Promise<void> => {
 export default function SignIn() {
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
+  const { setIsAuthenticated } = useAuth();
+  const navigate = useNavigate();
   const {
     register,
     handleSubmit,
@@ -58,6 +62,12 @@ export default function SignIn() {
   } = useForm<SigninInput>({
     resolver: zodResolver(SigninSchema),
   })
+
+  const handleNavigateDashboard = () => {
+    // Redirect the user
+    const origin = location.state?.from?.pathname || '/';
+    navigate(origin);
+  }
 
   const onSubmit = async (data: SigninInput) => {
     setIsLoading(true)
@@ -67,10 +77,13 @@ export default function SignIn() {
         title: "Sign In Successful",
         description: "Welcome back!",
       })
+      setIsAuthenticated(true);
+      handleNavigateDashboard();
     } catch (error: any) {
+      console.log(error);
       toast({
         title: "Sign In Failed",
-        description: error.response.data.error || "An error occurred. Please try again.",
+        description: error.response?.data.error || "An error occurred. Please try again.",
         variant: "destructive",
       })
     } finally {
