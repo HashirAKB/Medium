@@ -9,6 +9,7 @@ import { tagRouter } from './routes/tag';
 import { tagFollowRouter } from './routes/tagFollow';
 import { followRouter } from './routes/follow';
 import { feedRouter } from './routes/feed';
+import { cors } from 'hono/cors';
 
 const app = new Hono<{
 	Bindings: {
@@ -20,6 +21,8 @@ const app = new Hono<{
     prisma: any
 	}
 }>();
+
+app.use(cors());
 
 app.use('*', async (c, next) => {
   const prisma = new PrismaClient({
