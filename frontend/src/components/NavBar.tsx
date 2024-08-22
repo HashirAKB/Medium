@@ -28,7 +28,7 @@ export default function Navbar() {
   };
 
   return (
-    <nav className="border-b">
+    <nav className="border-b-transparent pb-2">
       <div className="flex h-16 items-center px-4">
         <Sheet>
           <SheetTrigger asChild>
