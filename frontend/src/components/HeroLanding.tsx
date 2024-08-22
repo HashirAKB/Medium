@@ -1,9 +1,16 @@
 import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
+import { useNavigate } from 'react-router-dom'
 
 export const HeroSection = () => {
     const [mounted, setMounted] = useState(false)
+    const navigate = useNavigate();
 
+    const handleNavigateToFeed = () => {
+        console.log("clicked");
+        navigate('/feed');
+    }
+      
     useEffect(() => {
         setMounted(true)
     }, [])
@@ -21,7 +28,7 @@ export const HeroSection = () => {
               A place to read, write, and deepen your understanding. Join our community of curious minds and passionate writers.
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
-              <Button size="lg" className="animate-fade-in" style={{ 
+              <Button onClick={handleNavigateToFeed} size="lg" className="animate-fade-in" style={{ 
                 animationDelay: mounted ? '300ms' : '0ms',
                 opacity: mounted ? 1 : 0
               }}>

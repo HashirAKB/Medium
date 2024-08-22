@@ -17,20 +17,6 @@ let featArticles = [
       author: 'Sarah Johnson',
       date: 'April 28, 2023',
     },
-    ,
-    {
-      title: 'The Art of Mindfulness in a Digital Age',
-      description: 'Finding balance and presence in an increasingly connected world.',
-      author: 'Sarah Johnson',
-      date: 'April 28, 2023',
-    },
-    ,
-    {
-      title: 'The Art of Mindfulness in a Digital Age',
-      description: 'Finding balance and presence in an increasingly connected world.',
-      author: 'Sarah Johnson',
-      date: 'April 28, 2023',
-    },
   ]
 export const ArticlesSection = () => {
     return (
