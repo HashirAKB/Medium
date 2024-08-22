@@ -16,7 +16,7 @@ interface Post {
   readingTime?: number
   likesCount: number
   commentsCount: number
-  isFollowingAuthor: Boolean
+  isFollowingAuthor: boolean
 }
 
 interface BlogFeedProps {
