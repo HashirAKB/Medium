@@ -22,12 +22,10 @@ import { Separator } from "@/components/ui/separator"
 
 const DoSignIn = (data: SigninInput): Promise<void> => {
   return new Promise((resolve, reject) => {
-    console.log(data);
     axiosInstance.post('/api/v1/user/signin', data)
       .then(function (response) {
         if(response.status == 200){
             console.log("Signin successfull");
-            console.log(response);
             localStorage.setItem('mediumAuthToken', response.data.token);
             resolve();
         }
@@ -55,6 +53,7 @@ export default function SignIn() {
   const { toast } = useToast()
   const { setIsAuthenticated } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const {
     register,
     handleSubmit,

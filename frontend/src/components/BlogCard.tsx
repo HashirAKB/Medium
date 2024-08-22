@@ -95,7 +95,7 @@ export function BlogPostCard({
             <span>{commentsCount}</span>
           </Button>
         </div>
-        <Link href={`/post/${id}`} passHref>
+        <Link to={`/post/${id}`}>
           <Button variant="outline" size="sm">
             Read More
           </Button>
