@@ -28,7 +28,7 @@ export default function Home() {
                   animationDelay: mounted ? '300ms' : '0ms',
                   opacity: mounted ? 1 : 0
                 }}>
-                  Start Reading
+                  Start Reading...
                 </Button>
                 <Button size="lg" variant="outline" className="animate-fade-in" style={{ 
                   animationDelay: mounted ? '600ms' : '0ms',
