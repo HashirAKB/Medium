@@ -13,6 +13,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { BookOpen, Edit, Home, Menu, Search, User } from 'lucide-react'
 import { useAuth } from '@/utils/AuthContext'
 import { Link } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 // This would come from your authentication context or state management
 // const isAuthenticated = true // Change this to false to see the unsigned-in state
@@ -20,11 +21,16 @@ import { Link } from 'react-router-dom'
 export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const { isAuthenticated, setIsAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   const handleLogout = () => {
     console.log("Logging Out");
     localStorage.removeItem('mediumAuthToken');
     setIsAuthenticated(false);
+  };
+
+  const navigateToProfile = () => {
+    navigate('/profile');
   };
 
   return (
@@ -112,7 +118,7 @@ export default function Navbar() {
                 <DropdownMenuContent align="end">
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>Profile</DropdownMenuItem>
+                  <DropdownMenuItem onClick={navigateToProfile}>Profile</DropdownMenuItem>
                   <DropdownMenuItem>Settings</DropdownMenuItem>
                   <DropdownMenuItem>Your Blogs</DropdownMenuItem>
                   <DropdownMenuItem>Write a Story</DropdownMenuItem>

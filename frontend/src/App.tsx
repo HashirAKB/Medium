@@ -11,6 +11,7 @@ import { dummyBlogs } from './assets/dummyBlogs'
 import { FullBlogPost } from './pages/FullBlogPost'
 import { ProtectedRoute } from './components/ProtectedRoutes'
 import CreateBlog from './pages/CreateBlog'
+import ProfileComponent from './pages/Profile'
 const App: React.FC = () => {
   return (
     <AuthProvider>
@@ -26,6 +27,7 @@ const App: React.FC = () => {
               <Route path="/feed" element={<BlogFeed posts={dummyBlogs}/>}/>
               <Route path="/post/:id" element={<FullBlogPost />}/>
               <Route path="/create" element={<CreateBlog />}/>
+              <Route path="/profile" element={<ProfileComponent />}/>
               {/* <Route path="/viewblog" element={<BlogPostPage />}/> */}
             </Route>
           </Routes>
