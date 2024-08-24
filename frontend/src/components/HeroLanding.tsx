@@ -10,6 +10,10 @@ export const HeroSection = () => {
         console.log("clicked");
         navigate('/feed');
     }
+    const handleNavigateToEditor = () => {
+      console.log("clicked");
+      navigate('/create');
+    }
       
     useEffect(() => {
         setMounted(true)
@@ -34,7 +38,7 @@ export const HeroSection = () => {
               }}>
                 Start Reading...
               </Button>
-              <Button size="lg" variant="outline" className="animate-fade-in" style={{ 
+              <Button onClick={handleNavigateToEditor} size="lg" variant="outline" className="animate-fade-in" style={{ 
                 animationDelay: mounted ? '600ms' : '0ms',
                 opacity: mounted ? 1 : 0
               }}>
