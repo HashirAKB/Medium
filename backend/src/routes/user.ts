@@ -6,6 +6,10 @@ import { z } from 'zod';
 import { genSalt, hash, compare } from "bcrypt-ts";
 import { signinSchema, signupSchema } from '@hashirakb/common4medium';
 
+export interface Env {
+  MEDIUM_IMAGE_ASSETS: KVNamespace;
+}
+
 const userRouter = new Hono();
 
 userRouter.use('/me', async (c, next) => {
@@ -43,7 +47,7 @@ userRouter.post('/signup', zValidator('json', signupSchema), async (c) => {
 
     // Hash the password before storing it
     const hashedPassword = await genSalt(10).then((salt) => hash(password, salt));
-    console.log("Hashed Password:", hashedPassword);
+    // console.log("Hashed Password:", hashedPassword);
 
     // Create the new user
     const user = await prisma.user.create({
@@ -210,10 +214,14 @@ userRouter.get('/me', authMiddleware, async (c) => {
 const userUpdateSchema = z.object({
   name: z.string().optional(),
   password: z.string().min(6).optional(),
+  confirmPassword: z.string().optional(),
   bio: z.string().optional(),
-  profileImage: z.string().url().optional(),
+  profileImage: z.string().optional(),
   followingIds: z.array(z.string()).optional(),
   tagFollowIds: z.array(z.string()).optional(),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
 });
 
 // type UserUpdateInput = z.infer<typeof userUpdateSchema>;
@@ -222,12 +230,13 @@ userRouter.patch('/me', zValidator('json', userUpdateSchema), authMiddleware, as
   const prisma = c.get('prisma');
   const userId = c.get('userId');
   const { name, password, bio, profileImage, followingIds, tagFollowIds } = c.req.valid('json');
+  const hashedPassword = await genSalt(10).then((salt) => hash(password, salt));
 
   const updatedUser = await prisma.user.update({
     where: { id: userId },
     data: {
       name: name,
-      password: password ? hashSync(password, 10) : undefined,
+      password: hashedPassword,
       bio: bio,
       profileImage: profileImage,
       following: {
@@ -254,6 +263,30 @@ userRouter.patch('/me', zValidator('json', userUpdateSchema), authMiddleware, as
   });
 
   return c.json(updatedUser);
+});
+
+userRouter.post('/upload-image', authMiddleware, async (c) => {
+  try {
+    const formData = await c.req.formData();
+    const file = formData.get('image');
+
+    if (!file) {
+      return c.json({ error: 'No image file uploaded' }, 400);
+    }
+
+    // Read the file as an ArrayBuffer
+    const arrayBuffer = await file.arrayBuffer();
+    // Generate a unique key for the image
+    const imageKey = `image_${Date.now()}`;
+    // Store the image in KV directly as an ArrayBuffer
+    const response = await c.env.MEDIUM_IMAGE_ASSETS.put(imageKey, arrayBuffer);
+    console.log(`Image stored with key: ${imageKey}`);
+
+    return c.json({ message: 'Image uploaded successfully', key: imageKey }, 200);
+  } catch (err) {
+    console.error('Error uploading image:', err);
+    return c.json({ error: 'Error uploading image' }, 500);
+  }
 });
 
 export { userRouter };
