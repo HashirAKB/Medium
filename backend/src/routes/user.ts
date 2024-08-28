@@ -207,7 +207,6 @@ userRouter.get('/me', authMiddleware, async (c) => {
     c.status(404);
     return c.json({ error: 'User not found' });
   }
-
   return c.json(user);
 });
 
@@ -216,7 +215,7 @@ const userUpdateSchema = z.object({
   password: z.string().min(6).optional(),
   confirmPassword: z.string().optional(),
   bio: z.string().optional(),
-  profileImage: z.string().optional(),
+  profileImageKey: z.string().optional(),
   followingIds: z.array(z.string()).optional(),
   tagFollowIds: z.array(z.string()).optional(),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -229,7 +228,7 @@ const userUpdateSchema = z.object({
 userRouter.patch('/me', zValidator('json', userUpdateSchema), authMiddleware, async (c) => {
   const prisma = c.get('prisma');
   const userId = c.get('userId');
-  const { name, password, bio, profileImage, followingIds, tagFollowIds } = c.req.valid('json');
+  const { name, password, bio, profileImageKey, followingIds, tagFollowIds } = c.req.valid('json');
   const hashedPassword = await genSalt(10).then((salt) => hash(password, salt));
 
   const updatedUser = await prisma.user.update({
@@ -238,7 +237,7 @@ userRouter.patch('/me', zValidator('json', userUpdateSchema), authMiddleware, as
       name: name,
       password: hashedPassword,
       bio: bio,
-      profileImage: profileImage,
+      profileImage: profileImageKey,
       following: {
         set: [],
         connect: followingIds?.map((id) => ({ id })),
@@ -288,5 +287,18 @@ userRouter.post('/upload-image', authMiddleware, async (c) => {
     return c.json({ error: 'Error uploading image' }, 500);
   }
 });
+
+userRouter.get('/get-image/:key', authMiddleware, async (c) => {
+  const imageKey = c.req.param('key');
+  const arrayBuffer = await c.env.MEDIUM_IMAGE_ASSETS.get(imageKey, 'arrayBuffer');
+  if (!arrayBuffer) {
+    return c.json({ error: 'Image not found' }, 404);
+  }
+  return new Response(arrayBuffer, {
+    headers: {
+      'Content-Type': 'image/jpeg', // Adjust as needed
+    },
+  });
+})
 
 export { userRouter };
