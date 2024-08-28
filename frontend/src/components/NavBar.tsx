@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -14,6 +14,7 @@ import { BookOpen, Edit, Home, Menu, Search, User } from 'lucide-react'
 import { useAuth } from '@/utils/AuthContext'
 import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
+import axiosInstance from '@/utils/axiosInstance'
 
 // This would come from your authentication context or state management
 // const isAuthenticated = true // Change this to false to see the unsigned-in state
@@ -21,7 +22,51 @@ import { useNavigate } from 'react-router-dom'
 export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const { isAuthenticated, setIsAuthenticated } = useAuth();
+  const [userProfileImage, setuserProfileImage] = useState('');
   const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchUserProfile();
+  }, []);
+
+  const fetchUserProfile = async () => {
+    try {
+      // setIsLoading(true);
+
+      const token = localStorage.getItem('mediumAuthToken');
+      if (!token) {
+        throw new Error("Authentication token is missing.");
+      }
+
+      const response = await axiosInstance.get('/api/v1/user/me', {
+        headers: {'Authorization': `Bearer ${token}`}
+      });
+      const { data } = response;
+
+      if (data.profileImage) {
+        try{
+          const profileImageResponse = await axiosInstance.get(`/api/v1/user/get-image/${data.profileImage}`, {
+            headers: { 'Authorization': `Bearer ${token}` },
+            responseType: 'arraybuffer'
+          });
+          const profileImageBlob = new Blob([profileImageResponse.data], { type: 'image/jpeg' });
+          setuserProfileImage(URL.createObjectURL(profileImageBlob));
+        }
+        catch (imageError) {
+          console.error('Error fetching profile image:', imageError);
+          // toast({
+          //   title: "Image Fetch Error",
+          //   description: "Failed to fetch profile image.",
+          //   variant: "destructive",
+          // });
+        }
+      }
+      } catch (error) {
+      console.error('Error fetching user profile:', error);
+    } finally {
+      // setIsLoading(false);
+    }
+  };
 
   const handleLogout = () => {
     console.log("Logging Out");
@@ -106,7 +151,7 @@ export default function Navbar() {
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" size="icon" className="rounded-full">
                     <img
-                      src="/placeholder.svg"
+                      src={userProfileImage}
                       alt="User avatar"
                       className="rounded-full"
                       height="32"
@@ -130,10 +175,10 @@ export default function Navbar() {
           ) : (
             <>
               <Button variant="ghost" asChild>
-                <Link prefetch={false} to="/signin">Sign In</Link>
+                <Link to="/signin">Sign In</Link>
               </Button>
               <Button asChild>
-                <Link prefetch={false} to="/signup">Sign Up</Link>
+                <Link to="/signup">Sign Up</Link>
               </Button>
             </>
           )}
