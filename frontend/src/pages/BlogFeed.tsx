@@ -1,7 +1,10 @@
 import { BlogPostCard } from "@/components/BlogCard"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
 import { Globe, Users } from 'lucide-react'
+import axiosInstance from "@/utils/axiosInstance";
+import { useToast } from "@/components/ui/use-toast"
+import { Skeleton } from "@/components/ui/skeleton"
 
 interface Post {
   id: string
@@ -23,15 +26,68 @@ interface BlogFeedProps {
   posts: Post[]
 }
   
-export function BlogFeed({ posts }: BlogFeedProps) {
+export function BlogFeed() {
   const [viewMode, setViewMode] = useState<"all" | "following">("all")
+  const [postsFromServer, setpostsFromServer] = useState<BlogFeedProps>()
+  const [isLoading, setIsLoading] = useState(true);
+
+  const { toast } = useToast();
+
+  // let postsFromServer: BlogFeedProps;
+
+  useEffect(() => {
+    fetchAllBlogs();
+  },[]);
+
+  const fetchAllBlogs = async () => {
+    try {
+      setIsLoading(true);
+
+      const token = localStorage.getItem('mediumAuthToken');
+      if (!token) {
+        throw new Error("Authentication token is missing.");
+      }
+
+      const response = await axiosInstance.get('/api/v1/blog', {
+        headers: {'Authorization': `Bearer ${token}`}
+      });
+      const { data } = response;
+      // console.log(data);
+      setpostsFromServer(data);
+      } catch (error) {
+      console.error('Error fetching blogs:', error);
+      toast({
+         title: "Unable to get blogs.",
+         description: "Failed to fetch blogs. Please refresh the page or try again later.",
+         variant: "destructive",
+       });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const filteredPosts = viewMode === "all" 
-    ? posts 
-    : posts.filter(post => post.isFollowingAuthor)
+  ? postsFromServer 
+  : postsFromServer.filter(post => post.isFollowingAuthor)
+  
+  // const filteredPosts = viewMode === "all" 
+  //   ? posts 
+  //   : posts.filter(post => post.isFollowingAuthor)
 
   return (
     <div className="space-y-6 space-x-20">
+      {isLoading ? (
+        <div className="min-h-screen w-full bg-white-900 flex items-start justify-center pt-16">
+          <div className="flex flex-col space-y-3">
+            <Skeleton className="h-[125px] w-[250px] rounded-xl" />
+            <div className="space-y-2">
+              <Skeleton className="h-4 w-[250px]" />
+              <Skeleton className="h-4 w-[200px]" />
+            </div>
+          </div>
+        </div>
+      ) : 
+    (<>
     <h1 className="text-xl font-bold text-center mb-6 ml-20">Latest Blog Posts</h1>
     <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as "all" | "following")}>
           <ToggleGroupItem value="all" aria-label="View all posts">
@@ -42,7 +98,7 @@ export function BlogFeed({ posts }: BlogFeedProps) {
             <Users className="h-4 w-4 mr-2" />
             Following
           </ToggleGroupItem>
-        </ToggleGroup>
+      </ToggleGroup>
       {filteredPosts.map((post) => (
         <BlogPostCard
           key={post.id}
@@ -53,8 +109,9 @@ export function BlogFeed({ posts }: BlogFeedProps) {
           author={post.author}
           tags={post.tags}
           readingTime={post.readingTime}
-          likesCount={post.likesCount}
-          commentsCount={post.commentsCount}
+          likesCount={post.likes.length}
+          commentsCount={post.comments.length}
+          profileImageKey = {post.author.profileImage}
         />
       ))}
       {viewMode === "following" && filteredPosts.length === 0 && (
@@ -62,6 +119,8 @@ export function BlogFeed({ posts }: BlogFeedProps) {
           You're not following any authors yet. Switch to "All" to discover new content!
         </p>
       )}
-    </div>
+    </>
+  )}
+  </div>
   )
 }

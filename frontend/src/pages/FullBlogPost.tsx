@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import { Heart, MessageCircle, Clock, UserPlus, UserMinus } from 'lucide-react'
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -6,7 +6,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Link, useParams } from 'react-router-dom'
-import { dummyBlogs } from '@/assets/dummyBlogs'
+import { Skeleton } from "@/components/ui/skeleton"
+import axiosInstance from '@/utils/axiosInstance'
+import { useToast } from "@/components/ui/use-toast"
+
 
 // interface FullBlogPostProps {
 //   id: string
@@ -26,16 +29,64 @@ import { dummyBlogs } from '@/assets/dummyBlogs'
 
 export function FullBlogPost() {
     const { id } = useParams<{ id: string }>();
-    const post = dummyBlogs.find((blog) => blog.id === id);
-    if(post){
-        const [isLiked, setIsLiked] = useState(false)
-        const [isFollowing, setIsFollowing] = useState(false)
-        const [localLikesCount, setLocalLikesCount] = useState(post.likesCount)
+    const [isLiked, setIsLiked] = useState(false)
+    const [isFollowing, setIsFollowing] = useState(false)
+    const [isLoading, setIsLoading] = useState(true);
+    const [blog, setBlog] = useState('');
+    const [localLikesCount, setLocalLikesCount] = useState(null)
+    const { toast } = useToast();
+    const [profileImage, setProfileImage] = useState('');
 
+
+
+    useEffect(() => {
+      fetchBlog();
+    },[])
+
+    const fetchBlog = async () => {
+      try {
+        setIsLoading(true);
+  
+        const token = localStorage.getItem('mediumAuthToken');
+        if (!token) {
+          throw new Error("Authentication token is missing.");
+        }
+  
+        const response = await axiosInstance.get(`/api/v1/blog/${id}`, {
+          headers: {'Authorization': `Bearer ${token}`}
+        });
+
+        if (response.data.author.profileImage) {
+          try{
+            const profileImageResponse = await axiosInstance.get(`/api/v1/user/get-image/${response.data.author.profileImage}`, {
+              headers: { 'Authorization': `Bearer ${token}` },
+              responseType: 'arraybuffer'
+            });
+            const profileImageBlob = new Blob([profileImageResponse.data], { type: 'image/jpeg' });
+            setProfileImage(URL.createObjectURL(profileImageBlob));
+          }
+          catch (imageError) {
+            console.error('Error fetching profile image:', imageError);
+          }
+        }
+
+        setBlog(response.data);
+        setLocalLikesCount(response.data.likes.length)
+        } catch (error) {
+        console.error('Error fetching blogs:', error);
+        toast({
+           title: "Unable fetch blog.",
+           description: "Failed to fetch blog. Please refresh the page or try again later.",
+           variant: "destructive",
+         });
+      } finally {
+        setIsLoading(false);
+      }
+    }
         const toggleLike = () => {
             setIsLiked(!isLiked)
             setLocalLikesCount(prevCount => isLiked ? prevCount - 1 : prevCount + 1)
-            // Here you would typically call an API to update the like status
+            // Todo: Here you would typically call an API to update the like status
         }
         
         const toggleFollow = () => {
@@ -44,21 +95,34 @@ export function FullBlogPost() {
         }
         return (
             <Card className="w-full max-w-3xl mx-auto">
+            {isLoading ? (
+              <div className="min-h-screen w-full bg-white-900 flex items-start justify-center pt-16">
+                <div className="flex flex-col space-y-3">
+                  <Skeleton className="h-[125px] w-[250px] rounded-xl" />
+                  <div className="space-y-2">
+                    <Skeleton className="h-4 w-[250px]" />
+                    <Skeleton className="h-4 w-[200px]" />
+                  </div>
+                </div>
+              </div>
+            ) : 
+            (
+              <>
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <Link to={`/author/${post.author.id}`}>
+                    <Link to={`/author/${blog.authorId}`}>
                       <Avatar>
-                        <AvatarImage src={post.author.image} alt={post.author.name} />
-                        <AvatarFallback>{post.author.name.charAt(0)}</AvatarFallback>
+                        <AvatarImage src={profileImage} alt={blog.author.name} />
+                        <AvatarFallback>{blog.author.name.charAt(0)}</AvatarFallback>
                       </Avatar>
                     </Link>
                     <div>
-                      <Link to={`/author/${post.author.id}`} className="text-sm font-medium hover:underline">
-                        {post.author.name}
+                      <Link to={`/author/${blog.author.id}`} className="text-sm font-medium hover:underline">
+                        {blog.author.name}
                       </Link>
                       <p className="text-xs text-muted-foreground">
-                        {formatDistanceToNow(new Date(post.createdAt), { addSuffix: true })}
+                        {formatDistanceToNow(new Date(blog.createdAt), { addSuffix: true })}
                       </p>
                     </div>
                   </div>
@@ -81,21 +145,21 @@ export function FullBlogPost() {
                   </Button>
                 </div>
                 <CardTitle className="mt-4 text-2xl lg:text-3xl">
-                  {post.title}
+                  {blog.title}
                 </CardTitle>
-                {post.readingTime && (
+                {blog.readingTime && (
                   <div className="flex items-center text-muted-foreground mt-2">
                     <Clock className="mr-1 h-4 w-4" />
-                    <span className="text-sm">{post.readingTime} min read</span>
+                    <span className="text-sm">{blog.readingTime} min read</span>
                   </div>
                 )}
               </CardHeader>
               <CardContent>
                 <div className="prose max-w-none">
-                  {post.content}
+                  {blog.content}
                 </div>
                 <div className="mt-6 flex flex-wrap gap-2">
-                  {post.tags.map((tag) => (
+                  {blog.tags.map((tag) => (
                     <Badge key={tag.name} variant="secondary">
                       {tag.name}
                     </Badge>
@@ -115,7 +179,7 @@ export function FullBlogPost() {
                   </Button>
                   <Button variant="ghost" size="sm" className="flex items-center space-x-2">
                     <MessageCircle className="h-4 w-4" />
-                    <span>{post.commentsCount}</span>
+                    <span>{blog.comments.length}</span>
                   </Button>
                 </div>
               </CardFooter>
@@ -124,9 +188,9 @@ export function FullBlogPost() {
                 <h2 className="text-xl font-semibold mb-4">Comments</h2>
                 {/* Comments component will be inserted here */}
                 <p className="text-muted-foreground">Comments component to be added...</p>
-              </div>
+              </div>|
+              </>
+            )}
             </Card>
           )
-    }
-
 }

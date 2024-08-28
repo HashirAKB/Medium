@@ -31,7 +31,7 @@ blogRouter.get('/', async (c) => {
   const prisma = c.get('prisma');
   const posts = await prisma.post.findMany({
     where: { published: true },
-    include: { tags: true, author: { select: { name: true } } },
+    include: { tags: true, author: { select: { id: true, name: true, profileImage: true } }, likes: true, comments: true },
   });
 
   return c.json(posts);
@@ -43,7 +43,7 @@ blogRouter.get('/:id', async (c) => {
 
   const post = await prisma.post.findUnique({
     where: { id },
-    include: {  tags: true, author: { select: { name: true } } },
+    include: { tags: true, author: { select: { id: true, name: true, profileImage: true } }, likes: true, comments: true },
   });
 
   if (!post) {
