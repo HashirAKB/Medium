@@ -22,6 +22,7 @@ import axiosInstance from '@/utils/axiosInstance'
 export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
   const { isAuthenticated, setIsAuthenticated } = useAuth();
+  const [username, setUsername] = useState('');
   const [userProfileImage, setuserProfileImage] = useState('');
   const navigate = useNavigate();
 
@@ -42,7 +43,7 @@ export default function Navbar() {
         headers: {'Authorization': `Bearer ${token}`}
       });
       const { data } = response;
-
+      setUsername(data.name);
       if (data.profileImage) {
         try{
           const profileImageResponse = await axiosInstance.get(`/api/v1/user/get-image/${data.profileImage}`, {
@@ -152,7 +153,7 @@ export default function Navbar() {
                   <Button variant="ghost" size="icon" className="rounded-full">
                     <img
                       src={userProfileImage}
-                      alt="User avatar"
+                      alt={username.charAt(0)}
                       className="rounded-full"
                       height="32"
                       width="32"
