@@ -29,7 +29,7 @@ const userUpdateSchema = z.object({
   bio: z.string().optional(),
   password: z.string().min(6, "Password must be at least 6 characters").optional(),
   confirmPassword: z.string().optional(),
-  profileImage: z.any().optional(),
+  profileImageKey: z.any().optional(),
   followingIds: z.array(z.string()).optional(),
   tagFollowIds: z.array(z.string()).optional()
 }).refine((data) => data.password === data.confirmPassword, {
@@ -42,7 +42,7 @@ type UserUpdateInput = {
   confirmPassword?: string;
   name?: string;
   bio?: string;
-  profileImage?: string;
+  profileImageKey?: string;
   followingIds?: string[];
   tagFollowIds?: string[];
 };
@@ -57,7 +57,7 @@ const updateProfile = (data: UserUpdateInput): Promise<void> => {
         }
         }).then(function (response) {
             if (response.status === 200) {
-            console.log(response);
+            // console.log(response);
             console.log("pofile updation successful");
             resolve();
         }
@@ -90,37 +90,64 @@ export default function ProfileComponent() {
   const fetchUserProfile = async () => {
     try {
       setIsLoading(true);
+
       const token = localStorage.getItem('mediumAuthToken');
+      if (!token) {
+        throw new Error("Authentication token is missing.");
+      }
+
       const response = await axiosInstance.get('/api/v1/user/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`
+        headers: {'Authorization': `Bearer ${token}`}
+      });
+      const { data } = response;
+      // console.log(data);
+
+      if (data.profileImage) {
+        try{
+          const profileImageResponse = await axiosInstance.get(`/api/v1/user/get-image/${data.profileImage}`, {
+            headers: { 'Authorization': `Bearer ${token}` },
+            responseType: 'arraybuffer'
+          });
+          const profileImageBlob = new Blob([profileImageResponse.data], { type: 'image/jpeg' });
+          setProfileImage(URL.createObjectURL(profileImageBlob));
         }
-      });
-      console.log(response);
-
-      // Use reset to load fetched data into form fields
-      reset({
-        name: response.data.name,
-        bio: response.data.bio,
-        profileImage: response.data.profileImage,
-        followingIds: response.data.following.map(user => user.id),
-        tagFollowIds: response.data.TagFollow.map(tag => tag.id)
-      });
-
-      setProfileImage(response.data.profileImage);
-      setFollowers(response.data.followers);
-      setFollowing(response.data.following);
-    } catch (error) {
+        catch (imageError) {
+          console.error('Error fetching profile image:', imageError);
+          toast({
+            title: "Image Fetch Error",
+            description: "Failed to fetch profile image.",
+            variant: "destructive",
+          });
+        }
+      }
+            // Use reset to load fetched data into form fields
+            reset({
+              name: response.data.name,
+              bio: response.data.bio,
+              profileImageKey: response.data.profilePic,
+              followingIds: response.data.following.map(user => user.id),
+              tagFollowIds: response.data.TagFollow.map(tag => tag.id)
+            });
+      
+            setProfileImageKey(response.data.profileImageKey);
+            setFollowers(response.data.followers);
+            setFollowing(response.data.following);
+      } catch (error) {
       console.error('Error fetching user profile:', error);
+      toast({
+         title: "Fetch Error",
+         description: "Failed to fetch user profile. Please refresh the page or try again later.",
+         variant: "destructive",
+       });
     } finally {
       setIsLoading(false);
     }
   };
 
   const onSubmit = async (data: UserUpdateInput) => {
-    console.log(typeof(profileImageKey));
+    // console.log(typeof(profileImageKey));
     setIsLoading(true);
-    data.profileImage = profileImageKey;
+    data.profileImageKey = profileImageKey;
     try {
       await updateProfile(data);
       toast({
@@ -160,7 +187,7 @@ export default function ProfileComponent() {
     if (file) {
       const formData = new FormData();
       formData.append('image', file);
-      console.log(formData.get("image"));
+      // console.log(formData.get("image"));
 
       try {
         const token = localStorage.getItem('mediumAuthToken');
@@ -172,7 +199,7 @@ export default function ProfileComponent() {
         });
 
         if (response.status === 200) {
-          console.log(response.data);
+          // console.log(response.data);
           console.log('Image uploaded successfully');
           setProfileImageKey(response.data.key);
         } else {
