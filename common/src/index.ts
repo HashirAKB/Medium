@@ -58,5 +58,6 @@ export const postSchema = z.object({
     content: z.string().min(1),
     published: z.boolean().optional(),
     tags: z.array(z.string().uuid()).optional(), // Array of Tag IDs
+    readingTime: z.number().optional(),
 });
 export type PostInput = z.infer<typeof postSchema>;

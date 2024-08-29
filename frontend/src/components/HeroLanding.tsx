@@ -8,7 +8,7 @@ export const HeroSection = () => {
 
     const handleNavigateToFeed = () => {
         console.log("clicked");
-        navigate('/feed');
+        navigate('/blogs');
     }
     const handleNavigateToEditor = () => {
       console.log("clicked");

@@ -23,6 +23,7 @@ const App: React.FC = () => {
             <Route path="/signup" element={<SignUp />}/>
             <Route path="/signin" element={<SignIn />}/>
             <Route element={<ProtectedRoute />}>
+              <Route path="/blogs" element={<BlogFeed/>}/>
               <Route path="/feed" element={<BlogFeed/>}/>
               <Route path="/post/:id" element={<FullBlogPost />}/>
               <Route path="/create" element={<CreateBlog />}/>

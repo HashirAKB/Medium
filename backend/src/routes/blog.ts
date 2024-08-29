@@ -9,14 +9,15 @@ blogRouter.use('*', authMiddleware);
 blogRouter.post('/', zValidator('json', postSchema), async (c) => {
   const prisma = c.get('prisma');
   const userId = c.get('userId');
-  const { title, content, published, tags } = c.req.valid('json');
+  const { title, content, published, tags, readingTime } = c.req.valid('json');
 
   const post = await prisma.post.create({
     data: {
       title,
       content,
-      published: published || false,
+      published: published || true,
       authorId: userId,
+      readingTime,
       tags: {
         connect: tags?.map((tagId) => ({ id: tagId})),
       },
@@ -31,7 +32,19 @@ blogRouter.get('/', async (c) => {
   const prisma = c.get('prisma');
   const posts = await prisma.post.findMany({
     where: { published: true },
-    include: { tags: true, author: { select: { id: true, name: true, profileImage: true } }, likes: true, comments: true },
+    include: { 
+      tags: true, 
+      author: { 
+        select: { 
+          id: true, 
+          name: true, 
+          profileImage: true, 
+          following: true,
+        }
+      },  
+      likes: true, 
+      comments: true 
+      },
   });
 
   return c.json(posts);

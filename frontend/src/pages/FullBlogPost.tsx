@@ -10,6 +10,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import axiosInstance from '@/utils/axiosInstance'
 import { useToast } from "@/components/ui/use-toast"
 import { useAuth } from '@/utils/AuthContext'
+import { BlogContent } from '@/components/BlogContentCard'
 
 
 
@@ -79,7 +80,7 @@ export function FullBlogPost() {
         console.log("Your id: ", user);
 
         if(response.data.likes){
-          const userHasLiked = response.data.likes.some(like => like.userId === user);
+          const userHasLiked = response.data.likes.some(like => like.userId === user.id);
           if (userHasLiked) {
             console.log("Liked Already");
             setIsLiked(true);
@@ -88,7 +89,7 @@ export function FullBlogPost() {
 
         if(response.data.author.following){
           console.log("Followers:",response.data.author.following.length);
-          const userIsFollowing = response.data.author.following.some(follower => user === follower.followerId);
+          const userIsFollowing = response.data.author.following.some(follower => user.id === follower.followerId);
           if (userIsFollowing) {
             console.log("You're following the account.");
             setIsFollowing(true);
@@ -200,6 +201,7 @@ export function FullBlogPost() {
               });
             }
         }
+
         return (
             <Card className="w-full max-w-3xl mx-auto">
             {isLoading ? (
@@ -263,7 +265,7 @@ export function FullBlogPost() {
               </CardHeader>
               <CardContent>
                 <div className="prose max-w-none">
-                  {blog.content}
+                  <BlogContent content={blog.content} />
                 </div>
                 <div className="mt-6 flex flex-wrap gap-2">
                   {blog.tags.map((tag) => (

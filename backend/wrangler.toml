@@ -7,9 +7,9 @@ node_compat = true
 DATABASE_URL="prisma://accelerate.prisma-data.net/?api_key=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhcGlfa2V5IjoiZmQ3ZjdlOTctZmIxMy00MTM1LWIzY2UtZWI4ODIyNWNmNTIxIiwidGVuYW50X2lkIjoiZDRmM2JjNGZjYmQ4ZTMwNDY2ZDQxNjdjODFmOGE2YzY3MTBkYWM2NmEwYTEzNzM0MTFkZGIzM2I4NzI5NjgwMCIsImludGVybmFsX3NlY3JldCI6IjYxNzM2YmNjLTA2NzItNDE1NC1iM2QyLTAxYzU3YWUzMGI1NiJ9.7DHWwiIqTl85TIGxyAj5KAlNPS1axnI1Nq92IKou5xc"
 JWT_SECRET="illuminati"
 
-# [[kv_namespaces]]
-# binding = "MY_KV_NAMESPACE"
-# id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+[[kv_namespaces]]
+binding = "MEDIUM_IMAGE_ASSETS"
+id = "de7bee31efb64263a4b96f40c18be3ba"
 
 # [[r2_buckets]]
 # binding = "MY_BUCKET"
