@@ -7,7 +7,6 @@ import Home from './pages/LandingPage'
 import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { AuthProvider } from './utils/AuthContext'
 import { BlogFeed } from './pages/BlogFeed'
-import { dummyBlogs } from './assets/dummyBlogs'
 import { FullBlogPost } from './pages/FullBlogPost'
 import { ProtectedRoute } from './components/ProtectedRoutes'
 import CreateBlog from './pages/CreateBlog'
