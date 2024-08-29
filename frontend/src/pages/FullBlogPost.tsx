@@ -9,6 +9,8 @@ import { Link, useParams } from 'react-router-dom'
 import { Skeleton } from "@/components/ui/skeleton"
 import axiosInstance from '@/utils/axiosInstance'
 import { useToast } from "@/components/ui/use-toast"
+import { useAuth } from '@/utils/AuthContext'
+
 
 
 // interface FullBlogPostProps {
@@ -36,6 +38,8 @@ export function FullBlogPost() {
     const [localLikesCount, setLocalLikesCount] = useState(null)
     const { toast } = useToast();
     const [profileImage, setProfileImage] = useState('');
+    const { user } = useAuth();
+
 
 
 
@@ -72,6 +76,27 @@ export function FullBlogPost() {
 
         setBlog(response.data);
         setLocalLikesCount(response.data.likes.length)
+        console.log("Your id: ", user);
+
+        if(response.data.likes){
+          response.data.likes.map((like) =>{
+            if(like.userId === user){
+              console.log("Liked Already");
+              setIsLiked(true);
+            }
+          })
+        }
+
+        if(response.data.author.following){
+          console.log("Followers:",response.data.author.following.length);
+          response.data.author.following.map((follower) =>{
+            if(user === follower.followerId){
+              console.log("You're following the account.");
+              setIsFollowing(true);
+            }
+          })
+        }
+
         } catch (error) {
         console.error('Error fetching blogs:', error);
         toast({
@@ -83,15 +108,93 @@ export function FullBlogPost() {
         setIsLoading(false);
       }
     }
-        const toggleLike = () => {
-            setIsLiked(!isLiked)
-            setLocalLikesCount(prevCount => isLiked ? prevCount - 1 : prevCount + 1)
-            // Todo: Here you would typically call an API to update the like status
-        }
+
+    const toggleLike = () => {
+      if(isLiked){
+        const token = localStorage.getItem('mediumAuthToken');
+        axiosInstance.delete('/api/v1/like',{
+          data: { postId: id },
+          headers: { 'Authorization': `Bearer ${token}` } }
+        )
+      .then(response => {
+          if (response.status === 200) {
+              console.log(response.data);
+              console.log("UnLiked the blog");
+          }
+      })
+      .catch(error => {
+          console.log(error);
+          if (error.response) {
+              console.log(error.response.data);
+          }
+      });
+
+      }
+      else{
+        const token = localStorage.getItem('mediumAuthToken');
+        axiosInstance.post('/api/v1/like', 
+          { postId: id },
+          { headers: { 'Authorization': `Bearer ${token}` } }
+        )
+        .then(response => {
+            if (response.status === 200) {
+                console.log(response.data);
+                console.log("Liked the blog");
+            }
+        })
+        .catch(error => {
+            console.log(error);
+            if (error.response) {
+                console.log(error.response.data);
+            }
+        });
+      }
+      const newIsLiked = !isLiked;
+      setIsLiked(newIsLiked);
+      setLocalLikesCount(prevCount => newIsLiked ? prevCount + 1 : prevCount - 1);
+  }
         
         const toggleFollow = () => {
-            setIsFollowing(!isFollowing)
             // Here you would typically call an API to update the follow status
+            if(isFollowing){
+              const token = localStorage.getItem('mediumAuthToken');
+              axiosInstance.delete('/api/v1/follow',{
+                data: { followingId: blog.authorId },
+                headers: { 'Authorization': `Bearer ${token}` } }
+              )
+            .then(response => {
+                if (response.status === 200) {
+                    console.log("Unfollowed the author!");
+                    setIsFollowing(false);
+                }
+            })
+            .catch(error => {
+                console.log(error);
+                if (error.response) {
+                    console.log(error.response.data);
+                }
+            });
+      
+            }
+            else{
+              const token = localStorage.getItem('mediumAuthToken');
+              axiosInstance.post('/api/v1/follow', 
+                { followingId: blog.authorId },
+                { headers: { 'Authorization': `Bearer ${token}` } }
+              )
+              .then(response => {
+                  if (response.status === 200) {
+                      console.log("Followed the author!");
+                      setIsFollowing(true);
+                  }
+              })
+              .catch(error => {
+                  console.log(error);
+                  if (error.response) {
+                      console.log(error.response.data);
+                  }
+              });
+            }
         }
         return (
             <Card className="w-full max-w-3xl mx-auto">
