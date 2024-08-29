@@ -136,6 +136,7 @@ export function BlogPostCard({
       <CardFooter className="flex justify-between">
         <div className="flex space-x-4">
           <Button
+            disabled
             variant="ghost"
             size="sm"
             className={`flex items-center space-x-2 ${isLiked ? 'text-red-500' : ''}`}
@@ -144,7 +145,7 @@ export function BlogPostCard({
             <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
             <span>{likesCount + (isLiked ? 1 : 0)}</span>
           </Button>
-          <Button variant="ghost" size="sm" className="flex items-center space-x-2">
+          <Button disabled variant="ghost" size="sm" className="flex items-center space-x-2">
             <MessageCircle className="h-4 w-4" />
             <span>{commentsCount}</span>
           </Button>

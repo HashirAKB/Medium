@@ -15,8 +15,8 @@ followRouter.post('/', zValidator('json', followSchema), async (c) => {
   const existingFollow = await prisma.follow.findUnique({
     where: {
       followerId_followingId: {
-        followerId,
         followingId,
+        followerId,
       },
     },
   });
@@ -28,8 +28,8 @@ followRouter.post('/', zValidator('json', followSchema), async (c) => {
 
   const follow = await prisma.follow.create({
     data: {
-      followerId,
       followingId,
+      followerId,
     },
   });
 

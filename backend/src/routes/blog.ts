@@ -43,7 +43,19 @@ blogRouter.get('/:id', async (c) => {
 
   const post = await prisma.post.findUnique({
     where: { id },
-    include: { tags: true, author: { select: { id: true, name: true, profileImage: true } }, likes: true, comments: true },
+    include: { 
+      tags: true, 
+      author: { 
+        select: { 
+          id: true, 
+          name: true, 
+          profileImage: true, 
+          following: true,
+        }
+      },  
+      likes: true, 
+      comments: true 
+      },
   });
 
   if (!post) {
