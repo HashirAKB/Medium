@@ -14,60 +14,18 @@ import { BookOpen, Edit, Home, Menu, Search, User } from 'lucide-react'
 import { useAuth } from '@/utils/AuthContext'
 import { Link } from 'react-router-dom'
 import { useNavigate } from 'react-router-dom'
-import axiosInstance from '@/utils/axiosInstance'
-
-// This would come from your authentication context or state management
-// const isAuthenticated = true // Change this to false to see the unsigned-in state
 
 export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const { isAuthenticated, setIsAuthenticated } = useAuth();
-  const [username, setUsername] = useState('');
-  const [userProfileImage, setuserProfileImage] = useState('');
+  const { isAuthenticated, setIsAuthenticated, user, userProfileImage } = useAuth();
+  // const [username, setUsername] = useState('');
+  // const [userProfileImage, setuserProfileImage] = useState('');
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
+
 
   useEffect(() => {
-    fetchUserProfile();
   }, []);
-
-  const fetchUserProfile = async () => {
-    try {
-      // setIsLoading(true);
-
-      const token = localStorage.getItem('mediumAuthToken');
-      if (!token) {
-        throw new Error("Authentication token is missing.");
-      }
-
-      const response = await axiosInstance.get('/api/v1/user/me', {
-        headers: {'Authorization': `Bearer ${token}`}
-      });
-      const { data } = response;
-      setUsername(data.name);
-      if (data.profileImage) {
-        try{
-          const profileImageResponse = await axiosInstance.get(`/api/v1/user/get-image/${data.profileImage}`, {
-            headers: { 'Authorization': `Bearer ${token}` },
-            responseType: 'arraybuffer'
-          });
-          const profileImageBlob = new Blob([profileImageResponse.data], { type: 'image/jpeg' });
-          setuserProfileImage(URL.createObjectURL(profileImageBlob));
-        }
-        catch (imageError) {
-          console.error('Error fetching profile image:', imageError);
-          // toast({
-          //   title: "Image Fetch Error",
-          //   description: "Failed to fetch profile image.",
-          //   variant: "destructive",
-          // });
-        }
-      }
-      } catch (error) {
-      console.error('Error fetching user profile:', error);
-    } finally {
-      // setIsLoading(false);
-    }
-  };
 
   const handleLogout = () => {
     console.log("Logging Out");
@@ -78,6 +36,11 @@ export default function Navbar() {
   const navigateToProfile = () => {
     navigate('/profile');
   };
+
+  const handleNavigateToEditor = () => {
+    console.log("clicked");
+    navigate('/create');
+  }
 
   return (
     <nav className="border-b-transparent pb-2">
@@ -93,7 +56,7 @@ export default function Navbar() {
             <nav className="flex flex-col gap-4">
             {isAuthenticated && (
                 <>
-              <Link to="/" className="flex items-center gap-2 text-lg font-semibold">
+              <Link to="/feed" className="flex items-center gap-2 text-lg font-semibold">
                 <BookOpen className="h-5 w-5" />
                 Your Feed
               </Link>
@@ -101,7 +64,7 @@ export default function Navbar() {
                     <User className="h-5 w-5" />
                     Your Blogs
                   </Link>
-                  <Link to="/" className="flex items-center gap-2 text-lg font-semibold">
+                  <Link to="/create" className="flex items-center gap-2 text-lg font-semibold">
                     <Edit className="h-5 w-5" />
                     Write a Story
                   </Link>
@@ -118,7 +81,7 @@ export default function Navbar() {
           <nav className="hidden md:flex items-center gap-6">
           {isAuthenticated && (
               <>
-            <Link to="/" className="text-sm font-medium hover:underline underline-offset-4">
+            <Link to="/feed" className="text-sm font-medium hover:underline underline-offset-4">
               Your Feed
             </Link>
                 <Link to="/" className="text-sm font-medium hover:underline underline-offset-4">
@@ -145,7 +108,7 @@ export default function Navbar() {
           </Button>
           {isAuthenticated ? (
             <>
-              <Button className="hidden md:inline-flex">
+              <Button onClick={handleNavigateToEditor} className="hidden md:inline-flex">
                 Write a Story
               </Button>
               <DropdownMenu>
@@ -153,7 +116,7 @@ export default function Navbar() {
                   <Button variant="ghost" size="icon" className="rounded-full">
                     <img
                       src={userProfileImage}
-                      alt={username.charAt(0)}
+                      alt={"."}
                       className="rounded-full"
                       height="32"
                       width="32"
@@ -167,7 +130,7 @@ export default function Navbar() {
                   <DropdownMenuItem onClick={navigateToProfile}>Profile</DropdownMenuItem>
                   <DropdownMenuItem>Settings</DropdownMenuItem>
                   <DropdownMenuItem>Your Blogs</DropdownMenuItem>
-                  <DropdownMenuItem>Write a Story</DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleNavigateToEditor}>Write a Story</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>Sign out</DropdownMenuItem>
                 </DropdownMenuContent>
