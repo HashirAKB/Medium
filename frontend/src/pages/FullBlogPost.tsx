@@ -79,22 +79,20 @@ export function FullBlogPost() {
         console.log("Your id: ", user);
 
         if(response.data.likes){
-          response.data.likes.map((like) =>{
-            if(like.userId === user){
-              console.log("Liked Already");
-              setIsLiked(true);
-            }
-          })
+          const userHasLiked = response.data.likes.some(like => like.userId === user);
+          if (userHasLiked) {
+            console.log("Liked Already");
+            setIsLiked(true);
+          }
         }
 
         if(response.data.author.following){
           console.log("Followers:",response.data.author.following.length);
-          response.data.author.following.map((follower) =>{
-            if(user === follower.followerId){
-              console.log("You're following the account.");
-              setIsFollowing(true);
-            }
-          })
+          const userIsFollowing = response.data.author.following.some(follower => user === follower.followerId);
+          if (userIsFollowing) {
+            console.log("You're following the account.");
+            setIsFollowing(true);
+          }
         }
 
         } catch (error) {
