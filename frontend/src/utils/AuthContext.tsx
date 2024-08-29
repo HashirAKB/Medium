@@ -23,8 +23,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   useEffect(() => {
     const checkAuth = () => {
-      const token = localStorage.getItem('walletAuthToken');
-      fetchUser();
+      const token = localStorage.getItem('mediumAuthToken');
+      if(!token){
+        console.log("No existing sessions.")
+      }
+      else{
+        fetchUser();
+      }
       setIsAuthenticated(!!token);
       setLoading(false);
     };
@@ -45,7 +50,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       });
       const { data } = response;
       setUser(data.id);
-      console.log("Auth context",data);
+      // console.log("Auth context",data);
     }
     catch(error){
       console.error('Error fetching user:', error);
