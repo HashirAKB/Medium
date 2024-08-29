@@ -110,8 +110,12 @@ export function FullBlogPost() {
     }
 
     const toggleLike = () => {
+      const token = localStorage.getItem('mediumAuthToken');
+            if (!token) {
+              console.error("Authentication token is missing.");
+              return;
+            }
       if(isLiked){
-        const token = localStorage.getItem('mediumAuthToken');
         axiosInstance.delete('/api/v1/like',{
           data: { postId: id },
           headers: { 'Authorization': `Bearer ${token}` } }
@@ -131,7 +135,6 @@ export function FullBlogPost() {
 
       }
       else{
-        const token = localStorage.getItem('mediumAuthToken');
         axiosInstance.post('/api/v1/like', 
           { postId: id },
           { headers: { 'Authorization': `Bearer ${token}` } }
@@ -155,9 +158,13 @@ export function FullBlogPost() {
   }
         
         const toggleFollow = () => {
+            const token = localStorage.getItem('mediumAuthToken');
+            if (!token) {
+              console.error("Authentication token is missing.");
+              return;
+            }
             // Here you would typically call an API to update the follow status
             if(isFollowing){
-              const token = localStorage.getItem('mediumAuthToken');
               axiosInstance.delete('/api/v1/follow',{
                 data: { followingId: blog.authorId },
                 headers: { 'Authorization': `Bearer ${token}` } }
@@ -177,7 +184,6 @@ export function FullBlogPost() {
       
             }
             else{
-              const token = localStorage.getItem('mediumAuthToken');
               axiosInstance.post('/api/v1/follow', 
                 { followingId: blog.authorId },
                 { headers: { 'Authorization': `Bearer ${token}` } }
