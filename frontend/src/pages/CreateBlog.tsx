@@ -9,8 +9,7 @@ import { RichTextEditor } from "@/components/TextEditor";
 import { useToast } from "@/components/ui/use-toast"
 import { postSchema, PostInput } from "@hashirakb/common4medium";
 import axiosInstance from "@/utils/axiosInstance";
-import { useState, useEffect } from "react";
-import { useNavigate } from 'react-router-dom'
+import { useState } from "react";
 
 // Define your schema for form validation
 const formSchema = z.object({
@@ -28,19 +27,7 @@ const formSchema = z.object({
       message: "Content must be between 2 and 2500 words.",
     }
   ),
-  readingTime: z.number(),
 });
-
-function estimateReadingTime(wordCount: number): number {
-  const wordsPerMinute = 50;
-  const minutes = Math.ceil(wordCount / wordsPerMinute);
-
-  if (minutes <= 1) {
-    return 1;
-  } else {
-    return minutes;
-  }
-}
 
 // Function to submit the blog post
 const submitBlogPost = (data: PostInput): Promise<void> => {
@@ -59,7 +46,7 @@ const submitBlogPost = (data: PostInput): Promise<void> => {
         .then(function (response) {
           if(response.status === 200){
             console.log("Blog post submitted successfully");
-            resolve(response.data.id);
+            resolve();
           }
         })
         .catch(function (error) {
@@ -72,16 +59,12 @@ const submitBlogPost = (data: PostInput): Promise<void> => {
 export default function CreateBlog() {
     const [wordCount, setwordCount] = useState(0)
     const [loading, setLoading] = useState(false);
-    const [readingTime, setReadingTime] = useState(0);
     const { toast } = useToast()
-    const navigate = useNavigate();
-
-  const { control, handleSubmit, watch, reset, setValue, formState: { errors } } = useForm({
+  const { control, handleSubmit, reset, formState: { errors } } = useForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
       content: "",
-      readingTime: 0
     },
   });
 
@@ -92,36 +75,17 @@ export default function CreateBlog() {
         content: "",
         published: false,
         tags: [],
-        readingTime: 0,
         },
     });
 
-    const content = watch('content');
-
-    // Update word count whenever content changes
-  useEffect(() => {
-    const words = content.trim().split(/\s+/);
-    setwordCount(words.length);
-    setReadingTime(estimateReadingTime(words.length));
-    setValue('readingTime', readingTime);
-  }, [content, setValue]);
-
-    const navigateToNewBlog = ({ blogid }: { blogid: string }) => {
-      console.log("hebhe");
-      console.log(blogid);
-      navigate(`/post/${blogid}`);
-    }
-    
     const onSubmit = async (data: PostInput) => {
-        // setwordCount(data.content.trim().split(/\s+/).length)
+        setwordCount(data.content.trim().split(/\s+/).length)
         setLoading(true);
         try {
-          const blogid = await submitBlogPost(data);
-          console.log("blogid:",blogid);
+          await submitBlogPost(data);
           console.log("Blog post submitted successfully");
           reset();
           toast({ title: "Blog post created!", description: `Title: ${data.title}` });
-          navigateToNewBlog({ blogid });
         } catch (error) {
           console.error("Failed to submit blog post", error);
         } finally {
@@ -178,15 +142,7 @@ export default function CreateBlog() {
                 )}
               />
               {errors.content && <p className="text-red-500 text-sm">{errors.content.message}</p>}
-              <Controller
-                name="readingTime"
-                control={control}
-                render={({ field }) => (
-                <p className="text-sm text-muted-foreground">
-                  Word count: {wordCount} | Estimated reading time: {field.value} Minutes
-                  </p>
-                )}
-                />
+              <p className="text-sm text-muted-foreground">Word count: {wordCount}</p>
             </div>
           </form>
         </CardContent>

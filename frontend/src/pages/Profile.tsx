@@ -22,7 +22,6 @@ import {
 } from "@/components/ui/dialog"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useAuth } from '@/utils/AuthContext';
 
 // Zod schema for form validation
 const userUpdateSchema = z.object({
@@ -72,15 +71,13 @@ const updateProfile = (data: UserUpdateInput): Promise<void> => {
 }
 
 export default function ProfileComponent() {
-  const { user, userProfileImage, loading } = useAuth();
-  const [isLoading, setIsLoading] = useState(loading);
+  const [isLoading, setIsLoading] = useState(true);
   const [profileImage, setProfileImage] = useState('');
   const [profileImageKey, setProfileImageKey] = useState('');
   const [followers, setFollowers] = useState([]);
   const [following, setFollowing] = useState([]);
   const followersCount = followers.length;
   const { toast } = useToast();
-  console.log(user);
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<UserUpdateInput>({
     resolver: zodResolver(userUpdateSchema),
@@ -92,18 +89,49 @@ export default function ProfileComponent() {
 
   const fetchUserProfile = async () => {
     try {
-      setProfileImage(userProfileImage);
+      setIsLoading(true);
+
+      const token = localStorage.getItem('mediumAuthToken');
+      if (!token) {
+        throw new Error("Authentication token is missing.");
+      }
+
+      const response = await axiosInstance.get('/api/v1/user/me', {
+        headers: {'Authorization': `Bearer ${token}`}
+      });
+      const { data } = response;
+      // console.log(data);
+
+      if (data.profileImage) {
+        try{
+          const profileImageResponse = await axiosInstance.get(`/api/v1/user/get-image/${data.profileImage}`, {
+            headers: { 'Authorization': `Bearer ${token}` },
+            responseType: 'arraybuffer'
+          });
+          const profileImageBlob = new Blob([profileImageResponse.data], { type: 'image/jpeg' });
+          setProfileImage(URL.createObjectURL(profileImageBlob));
+        }
+        catch (imageError) {
+          console.error('Error fetching profile image:', imageError);
+          toast({
+            title: "Image Fetch Error",
+            description: "Failed to fetch profile image.",
+            variant: "destructive",
+          });
+        }
+      }
+            // Use reset to load fetched data into form fields
             reset({
-              name: user.name,
-              bio: user.bio,
-              profileImageKey: user.profileImage,
-              followingIds: user.following.map(user => user.id),
-              tagFollowIds: user.TagFollow.map(tag => tag.id)
+              name: response.data.name,
+              bio: response.data.bio,
+              profileImageKey: response.data.profilePic,
+              followingIds: response.data.following.map(user => user.id),
+              tagFollowIds: response.data.TagFollow.map(tag => tag.id)
             });
       
-            setProfileImageKey(user.profileImage);
-            setFollowers(user.followers);
-            setFollowing(user.following);
+            setProfileImageKey(response.data.profileImageKey);
+            setFollowers(response.data.followers);
+            setFollowing(response.data.following);
       } catch (error) {
       console.error('Error fetching user profile:', error);
       toast({
@@ -111,6 +139,8 @@ export default function ProfileComponent() {
          description: "Failed to fetch user profile. Please refresh the page or try again later.",
          variant: "destructive",
        });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -262,9 +292,9 @@ export default function ProfileComponent() {
                           <div className="flex items-center space-x-2">
                             <Avatar>
                               <AvatarImage src={user.image} alt={user.name} />
-                              <AvatarFallback>{user.following.name.charAt(0)}</AvatarFallback>
+                              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                             </Avatar>
-                            <span>{user.following.name}</span>
+                            <span>{user.name}</span>
                           </div>
                           <Button variant="ghost" size="sm" onClick={() => handleUnfollow(user.id)}>
                             Unfollow
@@ -279,7 +309,7 @@ export default function ProfileComponent() {
                           <div className="flex items-center space-x-2">
                             <Avatar>
                               <AvatarImage src={user.image} alt={user.name} />
-                              <AvatarFallback>{user.following.name.charAt(0)}</AvatarFallback>
+                              <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
                             </Avatar>
                             <span>{user.name}</span>
                           </div>

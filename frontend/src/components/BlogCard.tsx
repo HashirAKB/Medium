@@ -8,7 +8,6 @@ import { Link } from 'react-router-dom'
 import { formatDistanceToNow } from 'date-fns'
 import { Skeleton } from "@/components/ui/skeleton"
 import axiosInstance from '@/utils/axiosInstance'
-import { BlogContent } from './BlogContentCard'
 
 
 interface BlogPostCardProps {
@@ -125,9 +124,7 @@ export function BlogPostCard({
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-muted-foreground line-clamp-3">
-          <BlogContent content={content} />
-        </p>
+        <p className="text-muted-foreground line-clamp-3">{content}</p>
         <div className="mt-4 flex flex-wrap gap-2">
           {tags.map((tag) => (
             <Badge key={tag.name} variant="secondary">

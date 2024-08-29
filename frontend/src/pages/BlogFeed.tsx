@@ -5,8 +5,6 @@ import { Globe, Users } from 'lucide-react'
 import axiosInstance from "@/utils/axiosInstance";
 import { useToast } from "@/components/ui/use-toast"
 import { Skeleton } from "@/components/ui/skeleton"
-import { useAuth } from "@/utils/AuthContext";
-import { useLocation } from 'react-router-dom';
 
 interface Post {
   id: string
@@ -29,11 +27,9 @@ interface BlogFeedProps {
 }
   
 export function BlogFeed() {
-  const location = useLocation();
   const [viewMode, setViewMode] = useState<"all" | "following">("all")
   const [postsFromServer, setpostsFromServer] = useState<BlogFeedProps>()
   const [isLoading, setIsLoading] = useState(true);
-  const {user} = useAuth();
 
   const { toast } = useToast();
 
@@ -41,7 +37,7 @@ export function BlogFeed() {
 
   useEffect(() => {
     fetchAllBlogs();
-  },[location.pathname]);
+  },[]);
 
   const fetchAllBlogs = async () => {
     try {
@@ -56,13 +52,8 @@ export function BlogFeed() {
         headers: {'Authorization': `Bearer ${token}`}
       });
       const { data } = response;
-      console.log(data);
+      // console.log(data);
       setpostsFromServer(data);
-      if (location.pathname === '/blogs') {
-        setViewMode("all");
-      } else if (location.pathname === '/feed') {
-        setViewMode("following");
-      }
       } catch (error) {
       console.error('Error fetching blogs:', error);
       toast({
@@ -77,9 +68,7 @@ export function BlogFeed() {
 
   const filteredPosts = viewMode === "all" 
   ? postsFromServer 
-  : postsFromServer.filter((post) => {
-    return post.author.following.some(follower => user.id === follower.followerId);
-  })
+  : postsFromServer.filter(post => post.isFollowingAuthor)
   
   // const filteredPosts = viewMode === "all" 
   //   ? posts 
