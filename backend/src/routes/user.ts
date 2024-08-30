@@ -4,7 +4,7 @@ import { zValidator } from '@hono/zod-validator';
 import { authMiddleware } from '../middlewares/auth-middleware';
 import { z } from 'zod';
 import { genSalt, hash, compare } from "bcrypt-ts";
-import { signinSchema, signupSchema } from '@hashirakb/common4medium';
+import { SigninSchema, signupSchema } from '@hashirakb/common4medium';
 
 export interface Env {
   MEDIUM_IMAGE_ASSETS: KVNamespace;
@@ -81,7 +81,7 @@ userRouter.post('/signup', zValidator('json', signupSchema), async (c) => {
   }
 });
 
-userRouter.post('/signin', zValidator('json', signinSchema), async (c) => {
+userRouter.post('/signin', zValidator('json', SigninSchema), async (c) => {
   const prisma = c.get('prisma');
   const { email, password } = c.req.valid('json');
 
