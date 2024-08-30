@@ -23,7 +23,7 @@ export default function EnhancedProgressLoader({ progress }) {
   }, [])
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-100 to-purple-100 p-4">
+    <div className="flex items-center justify-center w-full h-screen">
       <Card className="w-full max-w-md">
         <CardContent className="flex flex-col items-center space-y-6 p-6">
           <div className="flex items-center space-x-2">
