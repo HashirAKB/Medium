@@ -9,7 +9,8 @@ interface AuthContextType {
   loading: boolean;
   user:CleanedProfileInfo;
   setUser: React.Dispatch<React.SetStateAction<CleanedProfileInfo>>;
-  userProfileImage:string
+  userProfileImage:string,
+  fetchUser: () => Promise<void>;
 }
 
 // Interfaces
@@ -106,6 +107,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       const token = localStorage.getItem('mediumAuthToken');
       if(!token){
         console.log("No existing sessions.")
+        setIsAuthenticated(false);
+        setIsLoading(false);
       }
       else{
         fetchUser();
@@ -176,7 +179,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, loading, user, userProfileImage }}>
+    <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, loading, user, userProfileImage, fetchUser}}>
       {loading ? 
         (
           <EnhancedProgressLoader progress={loadingProgress}/>
