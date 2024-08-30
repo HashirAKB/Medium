@@ -25,28 +25,22 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useAuth } from '@/utils/AuthContext';
 
 // Zod schema for form validation
-const userUpdateSchema = z.object({
-  name: z.string().nonempty("Name is required"),
-  bio: z.string().optional(),
-  password: z.string().min(6, "Password must be at least 6 characters").optional(),
-  confirmPassword: z.string().optional(),
-  profileImageKey: z.any().optional(),
-  followingIds: z.array(z.string()).optional(),
-  tagFollowIds: z.array(z.string()).optional()
-}).refine((data) => data.password === data.confirmPassword, {
+const userUpdateSchema = z
+  .object({
+    name: z.string().nonempty("Name is required"),
+    bio: z.string().optional(),
+    password: z.string().min(6, "Password must be at least 6 characters").optional(),
+    confirmPassword: z.string().optional(),
+    profileImageKey: z.any().optional(),
+    followingIds: z.array(z.string()).optional(),
+    tagFollowIds: z.array(z.string()).optional()
+  })
+  .refine((data) => (!data.password || data.password === data.confirmPassword), {
     message: "Passwords don't match",
     path: ["confirmPassword"],
-});
+  });
 
-type UserUpdateInput = {
-  password?: string;
-  confirmPassword?: string;
-  name?: string;
-  bio?: string;
-  profileImageKey?: string;
-  followingIds?: string[];
-  tagFollowIds?: string[];
-};
+type UserUpdateInput = z.infer<typeof userUpdateSchema>;
 
 const updateProfile = (data: UserUpdateInput): Promise<void> => {
   return new Promise((resolve, reject) => {
@@ -72,7 +66,7 @@ const updateProfile = (data: UserUpdateInput): Promise<void> => {
 }
 
 export default function ProfileComponent() {
-  const { user, userProfileImage, loading } = useAuth();
+  const { user, userProfileImage, loading, fetchUser } = useAuth();
   const [isLoading, setIsLoading] = useState(loading);
   const [profileImage, setProfileImage] = useState('');
   const [profileImageKey, setProfileImageKey] = useState('');
@@ -119,10 +113,12 @@ export default function ProfileComponent() {
     data.profileImageKey = profileImageKey;
     try {
       await updateProfile(data);
+      await fetchUser();
       toast({
         title: "Success",
         description: "Profile updated successfully!",
       });
+      reset();
     } catch (error: any) {
       console.log(error);
       toast({
@@ -293,7 +289,7 @@ export default function ProfileComponent() {
               </div>
               <CardFooter className="flex justify-between mt-5">
                 <div className="space-x-2">
-                  <Button type="submit">Update Profile</Button>
+                  <Button type="submit">{isLoading ? "Updating..." : "Update Profile"}</Button>
                   <Button variant="ghost" onClick={handleSignOut}>Sign Out</Button>
                 </div>
                 <Dialog>
