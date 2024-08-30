@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth } from '@/utils/AuthContext';
 import { useToast } from "@/components/ui/use-toast"
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import {
   Card,
   CardContent,
@@ -210,9 +210,9 @@ export default function SignIn() {
       <CardFooter className="flex justify-center">
         <p className="text-sm text-muted-foreground">
           Don't have an account?{' '}
-          <a href="#" className="text-primary hover:underline">
+          <Link to="/signup" className="text-primary hover:underline">
             Sign up
-          </a>
+          </Link>
         </p>
       </CardFooter>
     </Card>
