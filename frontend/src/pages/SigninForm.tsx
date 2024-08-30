@@ -51,7 +51,7 @@ const simulateSocialLogin = (provider: string): Promise<void> => {
 export default function SignIn() {
   const [isLoading, setIsLoading] = useState(false)
   const { toast } = useToast()
-  const { setIsAuthenticated } = useAuth();
+  const { setIsAuthenticated, fetchUser } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const {
@@ -71,7 +71,8 @@ export default function SignIn() {
   const onSubmit = async (data: SigninInput) => {
     setIsLoading(true)
     try {
-      await DoSignIn(data)
+      await DoSignIn(data);
+      await fetchUser(); // Fetch user profile after successful sign-in
       toast({
         title: "Sign In Successful",
         description: "Welcome back!",
