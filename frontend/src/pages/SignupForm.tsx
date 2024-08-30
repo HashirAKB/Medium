@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useToast } from "@/components/ui/use-toast"
-import { useNavigate } from 'react-router-dom';
+import { useAuth } from '@/utils/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
 import {
   Card,
   CardContent,
@@ -18,11 +19,6 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Separator } from "@/components/ui/separator"
-
-const handleNavigateToHome = () => {
-  const navigate = useNavigate();
-  navigate('/');
-}
 
 const doSignup = (data: SignupInput): Promise<void> => {
   console.log(data);
@@ -54,7 +50,9 @@ const simulateSocialLogin = (provider: string): Promise<void> => {
 }
 
 export default function SignUp() {
+  const { fetchUser,setIsAuthenticated } = useAuth();
   const [isLoading, setIsLoading] = useState(false)
+  const navigate = useNavigate();
   const { toast } = useToast()
   const {
     register,
@@ -64,10 +62,16 @@ export default function SignUp() {
     resolver: zodResolver(signupSchema),
   })
 
+  const handleNavigateToHome = async () => {
+    await fetchUser();
+    navigate('/');
+  }
+
   const onSubmit = async (data: SignupInput) => {
     setIsLoading(true)
     try {
-      await doSignup(data)
+      await doSignup(data);
+      setIsAuthenticated(true);
       console.log("next toast")
       toast({
         title: "Signup Successful",
@@ -77,7 +81,7 @@ export default function SignUp() {
     } catch (error: any) {
       toast({
         title: "Signup Failed",
-        description: error.response.data.error || "An error occurred. Please try again.",
+        description: error.response || "An error occurred. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -218,9 +222,9 @@ export default function SignUp() {
       <CardFooter className="flex justify-center">
         <p className="text-sm text-muted-foreground">
           Already have an account?{' '}
-          <a href="#" className="text-primary hover:underline">
+          <Link to="/signin" className="text-primary hover:underline">
             Log in
-          </a>
+          </Link>
         </p>
       </CardFooter>
     </Card>
