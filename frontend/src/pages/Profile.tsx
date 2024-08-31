@@ -67,7 +67,7 @@ const updateProfile = (data: UserUpdateInput): Promise<void> => {
 }
 
 export default function ProfileComponent() {
-  const { user, userProfileImage, loading, setIsAuthenticated, fetchUser } = useAuth();
+  const { user, userProfileImage, loading, setIsAuthenticated, fetchUser, setuserProfileImage } = useAuth();
   const [isLoading, setIsLoading] = useState(loading);
   const [profileImage, setProfileImage] = useState('');
   const [profileImageKey, setProfileImageKey] = useState('');
@@ -97,8 +97,8 @@ export default function ProfileComponent() {
             });
       
             setProfileImageKey(user.profileImage);
-            setFollowers(user.followers);
-            setFollowing(user.following);
+            setFollowers(user.following);
+            setFollowing(user.followers);
       } catch (error) {
       console.error('Error fetching user profile:', error);
       toast({
@@ -136,6 +136,7 @@ export default function ProfileComponent() {
   const handleSignOut = () => {
       console.log("Logging Out");
       localStorage.removeItem('mediumAuthToken');
+      setuserProfileImage('');
       setIsAuthenticated(false);
       toast({
         title: "Logged Out Successfully",
@@ -153,6 +154,9 @@ export default function ProfileComponent() {
         }).then(function (response) {
             if (response.status === 200) {
             // console.log(response);
+            localStorage.removeItem('mediumAuthToken');
+            setuserProfileImage('');
+            setIsAuthenticated(false);
             console.log("account deleted successfully");
             toast({
               title: "Success",
@@ -173,7 +177,34 @@ export default function ProfileComponent() {
 
   const handleUnfollow = (userId) => {
     // Implement API call to unfollow user
-    
+    const token = localStorage.getItem('mediumAuthToken');
+    if (!token) {
+      console.error("Authentication token is missing.");
+      return;
+    }
+    axiosInstance.delete('/api/v1/follow',{
+      data: { followingId: userId },
+      headers: { 'Authorization': `Bearer ${token}` } }
+    )
+    .then(response => {
+        if (response.status === 200) {
+          toast({
+            title: "Success",
+            description: "Unfollowed the author!",
+          });
+          console.log("Unfollowed the author!");
+        }
+    })
+    .catch(error => {
+        toast({
+          title: "Failed",
+          description: error.response?.data.error || "Please try again.",
+          variant: "destructive",
+        });
+        if (error.response) {
+            console.log(error.response.data);
+        }
+    });
     setFollowing(following.filter(user => user.id !== userId));
   };
 
@@ -273,9 +304,9 @@ export default function ProfileComponent() {
                         <div key={each.follower.id} className="flex items-center space-x-2 mb-2">
                           <Avatar>
                             <AvatarImage src={each.follower.profileImage} alt={each.follower.name} />
-                            <AvatarFallback>{each.follower.name.charAt(0)}</AvatarFallback>
+                            <AvatarFallback>{each.follower.name ? each.follower.name.charAt(0) : each.follower.email.charAt(0)}</AvatarFallback>
                           </Avatar>
-                          <span>{each.follower.name}</span>
+                          <span>{each.follower.name || each.follower.email}</span>
                         </div>
                       ))}
                     </ScrollArea>
@@ -284,15 +315,15 @@ export default function ProfileComponent() {
                     <h3 className="text-lg font-semibold mb-2">Following ({following.length})</h3>
                     <ScrollArea className="h-[200px] w-full border rounded-md p-4">
                       {following.map((user) => (
-                        <div key={user.id} className="flex items-center justify-between mb-2">
+                        <div key={user.following.id} className="flex items-center justify-between mb-2">
                           <div className="flex items-center space-x-2">
                             <Avatar>
-                              <AvatarImage src={user.image} alt={user.name} />
-                              <AvatarFallback>{user.following.name.charAt(0)}</AvatarFallback>
+                              <AvatarImage src={user.following.image} alt={user.following.name} />
+                              <AvatarFallback>{user.following.name ? user.following.name.charAt(0) : user.following.email.charAt(0)}</AvatarFallback>
                             </Avatar>
-                            <span>{user.following.name}</span>
+                            <span>{user.following.name || user.following.email}</span>
                           </div>
-                          <Button variant="ghost" size="sm" onClick={() => handleUnfollow(user.id)}>
+                          <Button variant="ghost" size="sm" onClick={() => handleUnfollow(user.following.id)}>
                             Unfollow
                           </Button>
                         </div>
