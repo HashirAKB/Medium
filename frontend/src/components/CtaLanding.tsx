@@ -1,7 +1,17 @@
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { TrendingUp } from 'lucide-react'
+import { useToast } from "@/components/ui/use-toast"
+
 export const CtaSection = () => {
+  const { toast } = useToast()
+  const handleCTA = (event) => {
+    event.preventDefault();
+    toast({
+      title: "Subscription Successful",
+      description: "You've been subscribed to the weekly newsletter! Look out for top articles and blogs in your inbox.",
+    })
+  }
     return(
     <>
         <section className="py-20 sm:py-32">
@@ -13,7 +23,7 @@ export const CtaSection = () => {
             <p className="mx-auto mt-2 max-w-xl text-center text-lg leading-8 text-gray-300">
               Join our community of writers and share your unique perspective with the world.
             </p>
-            <form className="mx-auto mt-10 flex max-w-md gap-x-4">
+            <form className="mx-auto mt-10 flex max-w-md gap-x-4" onSubmit={handleCTA}>
               <Input
                 id="email-address"
                 name="email"
