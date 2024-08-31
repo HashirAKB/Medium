@@ -11,6 +11,7 @@ import axiosInstance from '@/utils/axiosInstance'
 import { useToast } from "@/components/ui/use-toast"
 import { useAuth } from '@/utils/AuthContext'
 import { BlogContent } from '@/components/BlogContentCard'
+import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import {
   Dialog,
@@ -51,35 +52,47 @@ export function FullBlogPost() {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [isViewingOwnBlogs, setIsViewingOwnBlogs] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
 
-    const handleDeleteBlog = () => {
+    const handleDeleteBlog = async () => {
+      setIsDeleting(true);
       const token = localStorage.getItem('mediumAuthToken');
-      axiosInstance.delete(`/api/v1/blog/${id}`, {
+      try {
+        const response = await axiosInstance.delete(`/api/v1/blog/${id}`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }
-          }).then(function (response) {
-              if (response.status === 200) {
-              // console.log(response);
-              // localStorage.removeItem('mediumAuthToken');
-              console.log("blog deleted successfully");
-              toast({
-                title: "Success",
-                description: "Blog deleted successfully!",
-              });
-              navigate('/myblogs');
-          }
-        })
-        .catch(function (error) {
-          console.log(error);
+        });
+        if (response.status === 200) {
+          toast({
+            title: "Success",
+            description: "Blog deleted successfully!",
+          });
+          navigate('/myblogs');
+        }
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
           toast({
             title: "Failed",
-            description: error.response?.data.error || "Can't delete account. Please try again.",
+            description: error.response?.data.error || "Failed to delete blog. Please try again.",
             variant: "destructive",
           });
-        });
+        } else {
+          toast({
+            title: "Error",
+            description: "An unexpected error occurred. Please try again.",
+            variant: "destructive",
+          });
+        }
+      } finally {
+        setIsDeleting(false);
+      }
     };
 
+
+    const checkIfViewingOwnBlog = (authorId: string) => {
+      return authorId === user.id;
+    };
 
     useEffect(() => {
       fetchBlog();
@@ -114,9 +127,7 @@ export function FullBlogPost() {
 
         setBlog(response.data);
         setLocalLikesCount(response.data.likes.length)
-        if(response.data.authorId === user.id){
-          setIsViewingOwnBlogs(true);
-        }
+        setIsViewingOwnBlogs(checkIfViewingOwnBlog(response.data.authorId));
 
         if(response.data.likes){
           const userHasLiked = response.data.likes.some(like => like.userId === user.id);
