@@ -28,7 +28,7 @@ export default function EnhancedProgressLoader({ progress }) {
         <CardContent className="flex flex-col items-center space-y-6 p-6">
           <div className="flex items-center space-x-2">
             <BookOpen className="h-8 w-8 text-primary" />
-            <h1 className="text-3xl font-bold text-primary">ReadVerse</h1>
+            <h1 className="text-3xl font-bold text-primary">Medium Vanced</h1>
           </div>
           
           <Progress value={progress} className="w-full" />
