@@ -10,7 +10,7 @@ interface AuthContextType {
   user:CleanedProfileInfo;
   setUser: React.Dispatch<React.SetStateAction<CleanedProfileInfo>>;
   userProfileImage:string,
-  setuserProfileImage:string,
+  setuserProfileImage: (imageUrl: string) => void,
   fetchUser: () => Promise<void>;
 }
 
