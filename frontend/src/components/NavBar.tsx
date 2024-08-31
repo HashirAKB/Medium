@@ -152,7 +152,7 @@ export default function Navbar() {
               <Button variant="ghost" asChild>
                 <Link to="/signin">Sign In</Link>
               </Button>
-              <Button asChild>
+              <Button asChild className="hidden sm:block">
                 <Link to="/signup">Sign Up</Link>
               </Button>
             </>
