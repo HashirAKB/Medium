@@ -50,6 +50,52 @@ blogRouter.get('/', async (c) => {
   return c.json(posts);
 });
 
+blogRouter.get('/me', async (c) => {
+  const prisma = c.get('prisma');
+  const userId = c.get('userId');
+
+  // Check if userId is present
+  if (!userId) {
+    return c.json({ error: 'User ID is required.' }, 400);
+  }
+
+  try {
+    const posts = await prisma.post.findMany({
+      where: {
+        published: true,
+        authorId: userId,  // Filter posts by authorId
+      },
+      include: {
+        tags: true,
+        author: {
+          select: {
+            id: true,
+            name: true,
+            profileImage: true,
+            following: true,
+          },
+        },
+        likes: true,
+        comments: true,
+      },
+    });
+
+    // If no posts are found
+    if (!posts || posts.length === 0) {
+      return c.json({ message: 'No posts found for this user.' }, 404);
+    }
+
+    return c.json(posts);
+  } catch (error) {
+    // Log the error for debugging
+    console.error('Error fetching posts:', error);
+
+    // Return a generic error message to the client
+    return c.json({ error: 'An error occurred while fetching posts.' }, 500);
+  }
+});
+
+
 blogRouter.get('/:id', async (c) => {
   const prisma = c.get('prisma');
   const id = c.req.param('id');
