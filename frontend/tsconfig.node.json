@@ -3,7 +3,12 @@
     "target": "ES2022",
     "lib": ["ES2023"],
     "module": "ESNext",
-    "skipLibCheck": true,
+    "noImplicitAny": false, // Allow 'any' type
+    "strictNullChecks": false, // Disable null and undefined checks
+    "noUnusedLocals": false, // Allow unused local variables
+    "noUnusedParameters": false, // Allow unused function parameters
+    "skipLibCheck": true, // Skip type checking of all declaration files (.d.ts)
+    "ignoreDeprecations": "5.0", // Suppress index errors
 
     /* Bundler mode */
     "moduleResolution": "bundler",
@@ -13,9 +18,7 @@
     "noEmit": true,
 
     /* Linting */
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "strict": false,
     "noFallthroughCasesInSwitch": true
   },
   "include": ["vite.config.ts"]

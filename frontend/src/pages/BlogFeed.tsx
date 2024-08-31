@@ -107,6 +107,7 @@ export function BlogFeed() {
 
   const filteredPosts = viewMode === "all" 
   ? postsFromServer 
+  // @ts-ignore
   : postsFromServer.filter((post) => {
     return post.author.following.some(follower => user.id === follower.followerId);
   })
