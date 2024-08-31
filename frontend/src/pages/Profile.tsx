@@ -5,6 +5,7 @@ import { z } from 'zod';
 import axiosInstance from '../utils/axiosInstance'
 // import { userUpdateSchema, UserUpdateInput } from '@hashirakb/common4medium'
 import { Button } from "@/components/ui/button"
+import { useNavigate } from 'react-router-dom'
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -66,7 +67,7 @@ const updateProfile = (data: UserUpdateInput): Promise<void> => {
 }
 
 export default function ProfileComponent() {
-  const { user, userProfileImage, loading, fetchUser } = useAuth();
+  const { user, userProfileImage, loading, setIsAuthenticated, fetchUser } = useAuth();
   const [isLoading, setIsLoading] = useState(loading);
   const [profileImage, setProfileImage] = useState('');
   const [profileImageKey, setProfileImageKey] = useState('');
@@ -74,6 +75,7 @@ export default function ProfileComponent() {
   const [following, setFollowing] = useState([]);
   const followersCount = followers.length;
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const { register, handleSubmit, reset, formState: { errors } } = useForm<UserUpdateInput>({
     resolver: zodResolver(userUpdateSchema),
@@ -132,17 +134,46 @@ export default function ProfileComponent() {
   };
 
   const handleSignOut = () => {
-    // Implement sign out logic
-    console.log('Signed out');
+      console.log("Logging Out");
+      localStorage.removeItem('mediumAuthToken');
+      setIsAuthenticated(false);
+      toast({
+        title: "Logged Out Successfully",
+        description: "See you again..."
+      })
+      navigate('/');
   };
 
   const handleDeleteProfile = () => {
-    // Implement API call to delete profile
-    console.log('Profile deleted');
+    const token = localStorage.getItem('mediumAuthToken');
+    axiosInstance.delete('/api/v1/user/me', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+        }).then(function (response) {
+            if (response.status === 200) {
+            // console.log(response);
+            console.log("account deleted successfully");
+            toast({
+              title: "Success",
+              description: "Account deleted successfully!",
+            });
+            navigate('/');
+        }
+      })
+      .catch(function (error) {
+        console.log(error);
+        toast({
+          title: "Failed",
+          description: error.response?.data.error || "Can't delete account. Please try again.",
+          variant: "destructive",
+        });
+      });
   };
 
   const handleUnfollow = (userId) => {
     // Implement API call to unfollow user
+    
     setFollowing(following.filter(user => user.id !== userId));
   };
 
@@ -267,7 +298,7 @@ export default function ProfileComponent() {
                         </div>
                       ))}
                     </ScrollArea>
-                    <h3 className="text-lg font-semibold mb-2">Tags ({following.length})</h3>
+                    {/* <h3 className="text-lg font-semibold mb-2">Tags ({following.length})</h3>
                     <ScrollArea className="h-[200px] w-full border rounded-md p-4">
                       {following.map((user) => (
                         <div key={user.id} className="flex items-center justify-between mb-2">
@@ -283,14 +314,19 @@ export default function ProfileComponent() {
                           </Button>
                         </div>
                       ))}
-                    </ScrollArea>
+                    </ScrollArea> */}
                   </div>
                 </div>
               </div>
-              <CardFooter className="flex justify-between mt-5">
-                <div className="space-x-2">
+              <CardFooter className="flex flex-col space-y-2 mt-5 sm:flex-row sm:justify-between sm:space-y-0 sm:space-x-2">
+                <div className="flex flex-col space-y-2 sm:flex-row sm:space-x-2 sm:space-y-0">
                   <Button type="submit">{isLoading ? "Updating..." : "Update Profile"}</Button>
-                  <Button variant="ghost" onClick={handleSignOut}>Sign Out</Button>
+                </div>
+                </CardFooter>
+              </form>
+              <CardFooter className="flex flex-col space-y-2 mt-5 sm:flex-row sm:justify-between sm:space-y-0 sm:space-x-2">
+                <div className="flex flex-col space-y-2 sm:flex-row sm:space-x-2 sm:space-y-0">
+                  <Button variant="outline" onClick={handleSignOut}>Sign Out</Button>
                 </div>
                 <Dialog>
                   <DialogTrigger asChild>
@@ -309,8 +345,9 @@ export default function ProfileComponent() {
                     </DialogFooter>
                   </DialogContent>
                 </Dialog>
-              </CardFooter>
-            </form>
+                </CardFooter>
+              {/* </CardFooter>
+            </form> */}
           </CardContent>
         </>
       )}

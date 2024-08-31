@@ -191,7 +191,10 @@ export default function CreateBlog() {
           </form>
         </CardContent>
         <CardFooter className="flex justify-between">
-          <Button variant="outline" className="flex items-center gap-2" onClick={() => reset()}>
+          <Button variant="outline" className="flex items-center gap-2" onClick={() => {
+            reset();
+            navigate('/');
+          }}>
             <XIcon className="w-4 h-4" />
             Cancel
           </Button>

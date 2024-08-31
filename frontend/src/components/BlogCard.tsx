@@ -84,7 +84,7 @@ export function BlogPostCard({
   }
 
   return (
-    <Card className="w-10/12">
+    <Card className="w-full sm:w-10/12 p-4 sm:p-6">
       {isLoading ? (
         <div className="min-h-screen w-full bg-white-900 flex items-start justify-center pt-16">
           <div className="flex flex-col space-y-3">
@@ -97,70 +97,70 @@ export function BlogPostCard({
         </div>
       ) : (
         <>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <Avatar>
-              <AvatarImage src={profileImage} alt={author.name} />
-              <AvatarFallback>{author.name.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <div>
-              <p className="text-sm font-medium">{author.name}</p>
-              <p className="text-xs text-muted-foreground">
-                {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}
-              </p>
+          <CardHeader>
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-4 sm:space-y-0">
+              <div className="flex items-center space-x-4">
+                <Avatar>
+                  <AvatarImage src={profileImage} alt={author.name} />
+                  <AvatarFallback>{author.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="text-sm font-medium">{author.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {formatDistanceToNow(new Date(createdAt), { addSuffix: true })}
+                  </p>
+                </div>
+              </div>
+              {readingTime && (
+                <div className="flex items-center text-muted-foreground">
+                  <Clock className="mr-1 h-4 w-4" />
+                  <span className="text-xs">{readingTime} min read</span>
+                </div>
+              )}
             </div>
-          </div>
-          {readingTime && (
-            <div className="flex items-center text-muted-foreground">
-              <Clock className="mr-1 h-4 w-4" />
-              <span className="text-xs">{readingTime} min read</span>
+            <CardTitle className="mt-4">
+              <Link to={`/post/${id}`} className="hover:underline text-lg sm:text-xl">
+                {title}
+              </Link>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-muted-foreground line-clamp-3 text-sm sm:text-base">
+              <BlogContent content={content} />
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {tags.map((tag) => (
+                <Badge key={tag.name} variant="secondary">
+                  {tag.name}
+                </Badge>
+              ))}
             </div>
-          )}
-        </div>
-        <CardTitle className="mt-4">
-          <Link to={`/post/${id}`} className="hover:underline">
-            {title}
-          </Link>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <p className="text-muted-foreground line-clamp-3">
-          <BlogContent content={content} />
-        </p>
-        <div className="mt-4 flex flex-wrap gap-2">
-          {tags.map((tag) => (
-            <Badge key={tag.name} variant="secondary">
-              {tag.name}
-            </Badge>
-          ))}
-        </div>
-      </CardContent>
-      <CardFooter className="flex justify-between">
-        <div className="flex space-x-4">
-          <Button
-            disabled
-            variant="ghost"
-            size="sm"
-            className={`flex items-center space-x-2 ${isLiked ? 'text-red-500' : ''}`}
-            onClick={toggleLike}
-          >
-            <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
-            <span>{likesCount + (isLiked ? 1 : 0)}</span>
-          </Button>
-          <Button disabled variant="ghost" size="sm" className="flex items-center space-x-2">
-            <MessageCircle className="h-4 w-4" />
-            <span>{commentsCount}</span>
-          </Button>
-        </div>
-        <Link to={`/post/${id}`}>
-          <Button variant="outline" size="sm">
-            Read More
-          </Button>
-        </Link>
-      </CardFooter>
-      </>
-    )}
+          </CardContent>
+          <CardFooter className="flex flex-col sm:flex-row justify-between items-start sm:items-center space-y-4 sm:space-y-0">
+            <div className="flex space-x-4">
+              <Button
+                disabled
+                variant="ghost"
+                size="sm"
+                className={`flex items-center space-x-2 ${isLiked ? 'text-red-500' : ''}`}
+                onClick={toggleLike}
+              >
+                <Heart className={`h-4 w-4 ${isLiked ? 'fill-current' : ''}`} />
+                <span>{likesCount + (isLiked ? 1 : 0)}</span>
+              </Button>
+              <Button disabled variant="ghost" size="sm" className="flex items-center space-x-2">
+                <MessageCircle className="h-4 w-4" />
+                <span>{commentsCount}</span>
+              </Button>
+            </div>
+            <Link to={`/post/${id}`}>
+              <Button variant="outline" size="sm">
+                Read More
+              </Button>
+            </Link>
+          </CardFooter>
+        </>
+      )}
     </Card>
-  )
+  );  
 }
