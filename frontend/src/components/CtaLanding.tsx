@@ -23,7 +23,7 @@ export const CtaSection = () => {
             <p className="mx-auto mt-2 max-w-xl text-center text-lg leading-8 text-gray-300">
               Join our community of writers and share your unique perspective with the world.
             </p>
-            <form className="mx-auto mt-10 flex max-w-md gap-x-4" onSubmit={handleCTA}>
+            <form className="mx-auto mt-10 flex flex-col sm:flex-row max-w-md gap-y-4 sm:gap-x-4" onSubmit={handleCTA}>
               <Input
                 id="email-address"
                 name="email"
