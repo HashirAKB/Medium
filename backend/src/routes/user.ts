@@ -264,6 +264,25 @@ userRouter.patch('/me', zValidator('json', userUpdateSchema), authMiddleware, as
   return c.json(updatedUser);
 });
 
+userRouter.delete('/me', authMiddleware, async (c) => {
+  const prisma = c.get('prisma');
+  const userId = c.get('userId');
+
+  try {
+    // Attempt to delete the user from the database
+    await prisma.user.delete({
+      where: { id: userId },
+    });
+
+    // Return a success response
+    return c.json({ message: 'User deleted successfully.' }, 200);
+  } catch (error) {
+    // Handle any errors that may occur during deletion
+    console.error('Error deleting user:', error);
+    return c.json({ error: 'Failed to delete user. Please try again later.' }, 500);
+  }
+});
+
 userRouter.post('/upload-image', authMiddleware, async (c) => {
   try {
     const formData = await c.req.formData();
