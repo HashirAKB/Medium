@@ -175,22 +175,24 @@ userRouter.get('/me', authMiddleware, async (c) => {
       },
       followers: {
         include: {
-          follower: {
+          following: {
             select: {
               id: true,
               name: true,
               profileImage: true,
+              email: true,
             },
           },
         },
       },
       following: {
         include: {
-          following: {
+          follower: {
             select: {
               id: true,
               name: true,
               profileImage: true,
+              email: true,
             },
           },
         },
