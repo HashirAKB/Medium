@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Button } from "@/components/ui/button"
+import { useToast } from "@/components/ui/use-toast"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,6 +23,7 @@ export default function Navbar() {
   // const [userProfileImage, setuserProfileImage] = useState('');
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast()
 
 
   useEffect(() => {
@@ -31,14 +33,23 @@ export default function Navbar() {
     console.log("Logging Out");
     localStorage.removeItem('mediumAuthToken');
     setIsAuthenticated(false);
+    toast({
+      title: "Logged Out Successfuly",
+      description: "See you again..."
+    })
+    navigate('/');
   };
 
   const navigateToProfile = () => {
     navigate('/profile');
   };
 
+  const navigateToMyBlogs = () => {
+    navigate('/myblogs');
+  };
+
   const handleNavigateToEditor = () => {
-    console.log("clicked");
+    // console.log("clicked");
     navigate('/create');
   }
 
@@ -60,7 +71,7 @@ export default function Navbar() {
                 <BookOpen className="h-5 w-5" />
                 Your Feed
               </Link>
-                  <Link to="/" className="flex items-center gap-2 text-lg font-semibold">
+                  <Link to="/myblogs" className="flex items-center gap-2 text-lg font-semibold">
                     <User className="h-5 w-5" />
                     Your Blogs
                   </Link>
@@ -73,10 +84,10 @@ export default function Navbar() {
             </nav>
           </SheetContent>
         </Sheet>
-        <div className="flex items-center gap-4 md:gap-6 lg:gap-10">
-          <Link to='/' className="flex items-center gap-2 text-xl font-bold">
+        <div className="flex items-center gap-2 sm:gap-4 md:gap-6 lg:gap-10">
+          <Link to='/' className="flex items-center gap-1 sm:gap-2 text-base sm:text-xl font-bold">
             <BookOpen className="h-6 w-6" />
-            Medium Vanced
+            <span className="whitespace-nowrap">Medium Vanced</span>
           </Link>
           <nav className="hidden md:flex items-center gap-6">
           {isAuthenticated && (
@@ -84,7 +95,7 @@ export default function Navbar() {
             <Link to="/feed" className="text-sm font-medium hover:underline underline-offset-4">
               Your Feed
             </Link>
-                <Link to="/" className="text-sm font-medium hover:underline underline-offset-4">
+                <Link to="/myblogs" className="text-sm font-medium hover:underline underline-offset-4">
                   Your Blogs
                 </Link>
               </>
@@ -128,8 +139,7 @@ export default function Navbar() {
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={navigateToProfile}>Profile</DropdownMenuItem>
-                  <DropdownMenuItem>Settings</DropdownMenuItem>
-                  <DropdownMenuItem>Your Blogs</DropdownMenuItem>
+                  <DropdownMenuItem onClick={navigateToMyBlogs}>Your Blogs</DropdownMenuItem>
                   <DropdownMenuItem onClick={handleNavigateToEditor}>Write a Story</DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem onClick={handleLogout}>Sign out</DropdownMenuItem>

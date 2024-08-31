@@ -31,6 +31,7 @@ interface BlogFeedProps {
 export function BlogFeed() {
   const location = useLocation();
   const [viewMode, setViewMode] = useState<"all" | "following">("all")
+  const [creatorMode, setCreatorMode] = useState(false)
   const [postsFromServer, setpostsFromServer] = useState<BlogFeedProps>()
   const [isLoading, setIsLoading] = useState(true);
   const {user} = useAuth();
@@ -52,16 +53,28 @@ export function BlogFeed() {
         throw new Error("Authentication token is missing.");
       }
 
-      const response = await axiosInstance.get('/api/v1/blog', {
-        headers: {'Authorization': `Bearer ${token}`}
-      });
-      const { data } = response;
-      console.log(data);
-      setpostsFromServer(data);
-      if (location.pathname === '/blogs') {
+      if (location.pathname === '/myblogs') {
         setViewMode("all");
-      } else if (location.pathname === '/feed') {
-        setViewMode("following");
+        setCreatorMode(true);
+        const response = await axiosInstance.get('/api/v1/blog/me', {
+          headers: {'Authorization': `Bearer ${token}`}
+        });
+        const { data } = response;
+        console.log(data);
+        setpostsFromServer(data);
+      }
+      else{
+        const response = await axiosInstance.get('/api/v1/blog', {
+          headers: {'Authorization': `Bearer ${token}`}
+        });
+        const { data } = response;
+        console.log(data);
+        setpostsFromServer(data);
+        if (location.pathname === '/blogs') {
+          setViewMode("all");
+        } else if (location.pathname === '/feed') {
+          setViewMode("following");
+        }
       }
       } catch (error) {
       console.error('Error fetching blogs:', error);
@@ -86,7 +99,7 @@ export function BlogFeed() {
   //   : posts.filter(post => post.isFollowingAuthor)
 
   return (
-    <div className="space-y-6 space-x-20">
+    <div className="space-y-4 sm:space-y-6 sm:space-x-20">
       {isLoading ? (
         <div className="min-h-screen w-full bg-white-900 flex items-start justify-center pt-16">
           <div className="flex flex-col space-y-3">
@@ -97,41 +110,51 @@ export function BlogFeed() {
             </div>
           </div>
         </div>
-      ) : 
-    (<>
-    <h1 className="text-xl font-bold text-center mb-6 ml-20">Latest Blog Posts</h1>
-    <ToggleGroup type="single" value={viewMode} onValueChange={(value) => value && setViewMode(value as "all" | "following")}>
-          <ToggleGroupItem value="all" aria-label="View all posts">
-            <Globe className="h-4 w-4 mr-2" />
-            All
-          </ToggleGroupItem>
-          <ToggleGroupItem value="following" aria-label="View posts from followed authors">
-            <Users className="h-4 w-4 mr-2" />
-            Following
-          </ToggleGroupItem>
-      </ToggleGroup>
-      {filteredPosts.map((post) => (
-        <BlogPostCard
-          key={post.id}
-          id={post.id}
-          title={post.title}
-          content={post.content}
-          createdAt={post.createdAt}
-          author={post.author}
-          tags={post.tags}
-          readingTime={post.readingTime}
-          likesCount={post.likes.length}
-          commentsCount={post.comments.length}
-          profileImageKey = {post.author.profileImage}
-        />
-      ))}
-      {viewMode === "following" && filteredPosts.length === 0 && (
-        <p className="text-center text-muted-foreground">
-          You're not following any authors yet. Switch to "All" to discover new content!
-        </p>
+      ) : (
+        <>
+          {!creatorMode ? (
+            <>
+              <h1 className="text-xl font-bold text-center mb-6">Latest Blog Posts</h1>
+              <ToggleGroup
+                type="single"
+                value={viewMode}
+                onValueChange={(value) => value && setViewMode(value as "all" | "following")}
+              >
+                <ToggleGroupItem value="all" aria-label="View all posts">
+                  <Globe className="h-4 w-4 mr-2" />
+                  All
+                </ToggleGroupItem>
+                <ToggleGroupItem value="following" aria-label="View posts from followed authors">
+                  <Users className="h-4 w-4 mr-2" />
+                  Following
+                </ToggleGroupItem>
+              </ToggleGroup>
+            </>
+          ) : (
+            <h1 className="text-xl font-bold text-center mb-6">Your Blogs</h1>
+          )}
+          {filteredPosts.map((post) => (
+            <BlogPostCard
+              key={post.id}
+              id={post.id}
+              title={post.title}
+              content={post.content}
+              createdAt={post.createdAt}
+              author={post.author}
+              tags={post.tags}
+              readingTime={post.readingTime}
+              likesCount={post.likes.length}
+              commentsCount={post.comments.length}
+              profileImageKey={post.author.profileImage}
+            />
+          ))}
+          {viewMode === "following" && filteredPosts.length === 0 && (
+            <p className="text-center text-muted-foreground">
+              You're not following any authors yet. Switch to "All" to discover new content!
+            </p>
+          )}
+        </>
       )}
-    </>
-  )}
-  </div>
-  )
+    </div>
+  );  
 }
