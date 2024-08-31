@@ -256,8 +256,9 @@ export default function ProfileComponent() {
             <CardTitle className="text-2xl font-bold">Profile</CardTitle>
           </CardHeader>
           <CardContent>
+          <div className="grid gap-6 md:grid-cols-2">
+            {/* Start of Form */}
             <form onSubmit={handleSubmit(onSubmit)}>
-              <div className="grid gap-6 md:grid-cols-2">
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="name">Name</Label>
@@ -271,15 +272,9 @@ export default function ProfileComponent() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="confirmPassword">Confirm Password</Label>
-                    <Input
-                    id="confirmPassword"
-                    type="password"
-                    {...register('confirmPassword')}
-                    />
-                    {errors.confirmPassword && (
-                    <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>
-                    )}
-                </div>
+                    <Input id="confirmPassword" type="password" {...register('confirmPassword')} />
+                    {errors.confirmPassword && <p className="text-sm text-red-500">{errors.confirmPassword.message}</p>}
+                  </div>
                   <div className="space-y-2">
                     <Label htmlFor="bio">Bio</Label>
                     <Textarea id="bio" {...register('bio')} />
@@ -296,92 +291,81 @@ export default function ProfileComponent() {
                     </div>
                   </div>
                 </div>
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">Followers ({followersCount})</h3>
-                    <ScrollArea className="h-[200px] w-full border rounded-md p-4">
-                      {followers.map((each) => (
-                        <div key={each.follower.id} className="flex items-center space-x-2 mb-2">
-                          <Avatar>
-                            <AvatarImage src={each.follower.profileImage} alt={each.follower.name} />
-                            <AvatarFallback>{each.follower.name ? each.follower.name.charAt(0) : each.follower.email.charAt(0)}</AvatarFallback>
-                          </Avatar>
-                          <span>{each.follower.name || each.follower.email}</span>
-                        </div>
-                      ))}
-                    </ScrollArea>
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold mb-2">Following ({following.length})</h3>
-                    <ScrollArea className="h-[200px] w-full border rounded-md p-4">
-                      {following.map((user) => (
-                        <div key={user.following.id} className="flex items-center justify-between mb-2">
-                          <div className="flex items-center space-x-2">
-                            <Avatar>
-                              <AvatarImage src={user.following.image} alt={user.following.name} />
-                              <AvatarFallback>{user.following.name ? user.following.name.charAt(0) : user.following.email.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <span>{user.following.name || user.following.email}</span>
-                          </div>
-                          <Button variant="ghost" size="sm" onClick={() => handleUnfollow(user.following.id)}>
-                            Unfollow
-                          </Button>
-                        </div>
-                      ))}
-                    </ScrollArea>
-                    {/* <h3 className="text-lg font-semibold mb-2">Tags ({following.length})</h3>
-                    <ScrollArea className="h-[200px] w-full border rounded-md p-4">
-                      {following.map((user) => (
-                        <div key={user.id} className="flex items-center justify-between mb-2">
-                          <div className="flex items-center space-x-2">
-                            <Avatar>
-                              <AvatarImage src={user.image} alt={user.name} />
-                              <AvatarFallback>{user.following.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                            <span>{user.name}</span>
-                          </div>
-                          <Button variant="ghost" size="sm" onClick={() => handleUnfollow(user.id)}>
-                            Unfollow
-                          </Button>
-                        </div>
-                      ))}
-                    </ScrollArea> */}
-                  </div>
-                </div>
+              
+              <CardFooter className="flex flex-col space-y-2 mt-5 sm:justify-between sm:space-y-0 sm:space-x-2">
+                <Button type="submit">{isLoading ? "Updating..." : "Update Profile"}</Button>
+              </CardFooter>
+            </form>
+            {/* End of Form */}
+  
+            {/* Following and Followers Section */}
+            <div className="space-y-4 mt-6">
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Followers ({followersCount})</h3>
+                <ScrollArea className="h-[200px] w-full border rounded-md p-4">
+                  {followers.map((each) => (
+                    <div key={each.follower.id} className="flex items-center space-x-2 mb-2">
+                      <Avatar>
+                        <AvatarImage src={each.follower.profileImage} alt={each.follower.name} />
+                        <AvatarFallback>
+                          {each.follower.name ? each.follower.name.charAt(0) : each.follower.email.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span>{each.follower.name || each.follower.email}</span>
+                    </div>
+                  ))}
+                </ScrollArea>
               </div>
-              <CardFooter className="flex flex-col space-y-2 mt-5 sm:flex-row sm:justify-between sm:space-y-0 sm:space-x-2">
-                <div className="flex flex-col space-y-2 sm:flex-row sm:space-x-2 sm:space-y-0">
-                  <Button type="submit">{isLoading ? "Updating..." : "Update Profile"}</Button>
-                </div>
-                </CardFooter>
-              </form>
-              <CardFooter className="flex flex-col space-y-2 mt-5 sm:flex-row sm:justify-between sm:space-y-0 sm:space-x-2">
-                <div className="flex flex-col space-y-2 sm:flex-row sm:space-x-2 sm:space-y-0">
-                  <Button variant="outline" onClick={handleSignOut}>Sign Out</Button>
-                </div>
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant="destructive">Delete Profile</Button>
-                  </DialogTrigger>
-                  <DialogContent>
-                    <DialogHeader>
-                      <DialogTitle>Are you sure?</DialogTitle>
-                      <DialogDescription>
-                        This action cannot be undone. This will permanently delete your profile.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                      <Button variant="ghost" onClick={() => console.log('Canceled')}>Cancel</Button>
-                      <Button variant="destructive" onClick={handleDeleteProfile}>Delete</Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-                </CardFooter>
-              {/* </CardFooter>
-            </form> */}
+              <div>
+                <h3 className="text-lg font-semibold mb-2">Following ({following.length})</h3>
+                <ScrollArea className="h-[200px] w-full border rounded-md p-4">
+                  {following.map((user) => (
+                    <div key={user.following.id} className="flex items-center justify-between mb-2">
+                      <div className="flex items-center space-x-2">
+                        <Avatar>
+                          <AvatarImage src={user.following.image} alt={user.following.name} />
+                          <AvatarFallback>
+                            {user.following.name ? user.following.name.charAt(0) : user.following.email.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span>{user.following.name || user.following.email}</span>
+                      </div>
+                      <Button variant="ghost" size="sm" onClick={() => handleUnfollow(user.following.id)}>
+                        Unfollow
+                      </Button>
+                    </div>
+                  ))}
+                </ScrollArea>
+              </div>
+            </div>
+            </div>
           </CardContent>
+  
+          {/* Additional Footer Section */}
+          <CardFooter className="flex flex-col space-y-2 mt-5 sm:flex-row sm:justify-between sm:space-y-0 sm:space-x-2">
+            <div className="flex flex-col space-y-2 sm:flex-row sm:space-x-2 sm:space-y-0">
+              <Button variant="outline" onClick={handleSignOut}>Sign Out</Button>
+            </div>
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="destructive">Delete Profile</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Are you sure?</DialogTitle>
+                  <DialogDescription>
+                    This action cannot be undone. This will permanently delete your profile.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button variant="ghost" onClick={() => console.log('Canceled')}>Cancel</Button>
+                  <Button variant="destructive" onClick={handleDeleteProfile}>Delete</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </CardFooter>
         </>
       )}
     </Card>
-  );
+  );  
 }
