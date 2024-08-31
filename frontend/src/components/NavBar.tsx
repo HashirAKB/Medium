@@ -18,7 +18,7 @@ import { useNavigate } from 'react-router-dom'
 
 export default function Navbar() {
   const [isSearchOpen, setIsSearchOpen] = useState(false)
-  const { isAuthenticated, setIsAuthenticated, user, userProfileImage } = useAuth();
+  const { isAuthenticated, setIsAuthenticated, user, userProfileImage, setuserProfileImage} = useAuth();
   // const [username, setUsername] = useState('');
   // const [userProfileImage, setuserProfileImage] = useState('');
   const navigate = useNavigate();
@@ -32,6 +32,7 @@ export default function Navbar() {
   const handleLogout = () => {
     console.log("Logging Out");
     localStorage.removeItem('mediumAuthToken');
+    setuserProfileImage('');
     setIsAuthenticated(false);
     toast({
       title: "Logged Out Successfuly",

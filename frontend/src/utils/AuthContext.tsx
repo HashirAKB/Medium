@@ -10,6 +10,7 @@ interface AuthContextType {
   user:CleanedProfileInfo;
   setUser: React.Dispatch<React.SetStateAction<CleanedProfileInfo>>;
   userProfileImage:string,
+  setuserProfileImage: (imageUrl: string) => void,
   fetchUser: () => Promise<void>;
 }
 
@@ -179,7 +180,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, loading, user, userProfileImage, fetchUser}}>
+    <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, loading, user, userProfileImage, setuserProfileImage, fetchUser}}>
       {loading ? 
         (
           <EnhancedProgressLoader progress={loadingProgress}/>

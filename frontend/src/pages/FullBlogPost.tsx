@@ -11,7 +11,17 @@ import axiosInstance from '@/utils/axiosInstance'
 import { useToast } from "@/components/ui/use-toast"
 import { useAuth } from '@/utils/AuthContext'
 import { BlogContent } from '@/components/BlogContentCard'
-
+import axios from 'axios'
+import { useNavigate } from 'react-router-dom'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
 
 
 // interface FullBlogPostProps {
@@ -40,9 +50,49 @@ export function FullBlogPost() {
     const { toast } = useToast();
     const [profileImage, setProfileImage] = useState('');
     const { user } = useAuth();
+    const navigate = useNavigate();
+    const [isViewingOwnBlogs, setIsViewingOwnBlogs] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    const handleDeleteBlog = async () => {
+      setIsDeleting(true);
+      const token = localStorage.getItem('mediumAuthToken');
+      try {
+        const response = await axiosInstance.delete(`/api/v1/blog/${id}`, {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        if (response.status === 200) {
+          toast({
+            title: "Success",
+            description: "Blog deleted successfully!",
+          });
+          navigate('/myblogs');
+        }
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          toast({
+            title: "Failed",
+            description: error.response?.data.error || "Failed to delete blog. Please try again.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "Error",
+            description: "An unexpected error occurred. Please try again.",
+            variant: "destructive",
+          });
+        }
+      } finally {
+        setIsDeleting(false);
+      }
+    };
 
 
-
+    const checkIfViewingOwnBlog = (authorId: string) => {
+      return authorId === user.id;
+    };
 
     useEffect(() => {
       fetchBlog();
@@ -77,7 +127,7 @@ export function FullBlogPost() {
 
         setBlog(response.data);
         setLocalLikesCount(response.data.likes.length)
-        console.log("Your id: ", user);
+        setIsViewingOwnBlogs(checkIfViewingOwnBlog(response.data.authorId));
 
         if(response.data.likes){
           const userHasLiked = response.data.likes.some(like => like.userId === user.id);
@@ -220,7 +270,7 @@ export function FullBlogPost() {
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-4">
-                    <Link to={`/author/${blog.authorId}`}>
+                    <Link to='#'>
                       <Avatar>
                         <AvatarImage src={profileImage} alt={blog.author.name} />
                         <AvatarFallback>{blog.author.name.charAt(0)}</AvatarFallback>
@@ -291,6 +341,25 @@ export function FullBlogPost() {
                     <span>{blog.comments.length}</span>
                   </Button>
                 </div>
+                {isViewingOwnBlogs ? (
+                <Dialog>
+              <DialogTrigger asChild>
+                <Button variant="destructive">Delete Blog</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Are you sure?</DialogTitle>
+                  <DialogDescription>
+                    This action cannot be undone. This will permanently delete the blog.
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                  <Button variant="ghost" onClick={() => console.log('Canceled')}>Cancel</Button>
+                  <Button variant="destructive" onClick={handleDeleteBlog}>Delete</Button>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+                ):(<></>)}
               </CardFooter>
               {/* Placeholder for comments component */}
               <div className="mt-8 p-4 border-t">
