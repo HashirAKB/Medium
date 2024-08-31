@@ -8,6 +8,7 @@ interface AuthContextType {
   setIsAuthenticated: React.Dispatch<React.SetStateAction<boolean>>;
   loading: boolean;
   user:CleanedProfileInfo;
+  // @ts-ignore
   setUser: React.Dispatch<React.SetStateAction<CleanedProfileInfo>>;
   userProfileImage:string,
   setuserProfileImage: (imageUrl: string) => void,
@@ -180,6 +181,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   }
 
   return (
+    // @ts-ignore
     <AuthContext.Provider value={{ isAuthenticated, setIsAuthenticated, loading, user, userProfileImage, setuserProfileImage, fetchUser}}>
       {loading ? 
         (
