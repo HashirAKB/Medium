@@ -11,7 +11,8 @@ model User {
   id           String      @id @default(uuid())
   email        String      @unique
   name         String?
-  password     String // Store hashed password, not Bytes
+  password     String? // Store hashed password, not Bytes
+  googleId     String?
   bio          String?
   profileImage String?
   createdAt    DateTime    @default(now())
